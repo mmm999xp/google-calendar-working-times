@@ -1,0 +1,11 @@
+{
+  "name": "Google Calendar Working Times",
+  "description": "提供Google日曆計算與顯示產品製作工時並將其圖形化顯示的擴充功能。",
+  "version": "0.0.1",
+  "manifest_version": 3,
+  "icons": {
+    "16": "icon/calendar.png",
+    "48": "icon/calendar.png",
+    "128": "icon/calendar.png"
+  } 
+}
