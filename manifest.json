@@ -7,5 +7,15 @@
     "16": "icon/calendar.png",
     "48": "icon/calendar.png",
     "128": "icon/calendar.png"
-  } 
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://calendar.google.com/calendar/*"
+      ],
+      "js": [
+        "app.js"
+      ]
+    }
+  ]
 }
