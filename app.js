@@ -32,16 +32,20 @@ function injectHelloWorldButton (event) {
   const eventId = event.target.getAttribute('data-eventid')
   // 清除現有的間隔，避免setInterval重複添加
   clearInterval(intervalInjectIcon)
-
+  // setInterval設定間隔執行器，每50單位檢測按鈕是否被添加
   intervalInjectIcon = setInterval(function () {
+    // 如果沒找到事件面板工具列選擇器則直接return
     const eventPanelNode = document.querySelector(EVENT_PANEL_SELECTOR)
 
     if (eventPanelNode == null) return
+    // 清除間隔執行器
     clearInterval(intervalInjectIcon)
     console.log('aaa')
+    // 確認有沒有按鈕的CSS選擇器
     const helloWorldButton = eventPanelNode.querySelector('.open-hello-world')
     // 如果沒有按鈕
     if (helloWorldButton == null) {
+      // 傳入事件面板與日曆事件的id作為參數呼叫prependHelloWorldButton函式添加按鈕
       prependHelloWorldButton(eventPanelNode, eventId)
     }
   }, INTERVAL_DELAY)
