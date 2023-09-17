@@ -1,34 +1,45 @@
+<!-- 啟用工時計算 -->
+<div class="enable_work_times">
+  <input type="checkbox" id="check_work_times">
+  <label for="check_work_times">啟用工時計算</label>
+</div>
+<!-- 表單 -->
 <form action="#">
-  <!-- 啟用工時計算 -->
-  <div class="enable_work_times">
-    <input type="checkbox" id="check_work_times">
-    <label for="check_work_times">啟用工時計算</label>
+  <div class="date_block">
+    <label for="date_input">日期</label>
+    <input type="date" id="date_input" disabled value="2023-09-17" name="date">
   </div>
   <!-- 名稱輸入欄位 -->
   <div class="product_number_block">
     <label for="product_number_input">品號</label>
-    <input type="text" id="product_number_input">
+    <input type="text" id="product_number_input" name="product_number">
   </div>
   <!-- 顏色輸入欄位 -->
   <div class="product_color_block">
     <label for="product_color_input">顏色</label>
-    <input type="text" id="product_color_input">
+    <input type="text" id="product_color_input" name="product_color">
   </div>
   <!-- 作業人數輸入欄位 -->
   <div class="people_counts_block">
     <label for="people_counts_input">作業人數</label>
-    <input type="range" id="people_counts_input" min="1" max="10" value="4">
+    <input type="range" id="people_counts_input" min="1" max="10" value="4" name="people_counts">
   </div>
   <!-- 當日工時輸入欄位 -->
   <div class="working_hours_block">
     <label for="working_hours_input">本日工作時數</label>
-    <input type="range" id="working_hours_input" min="1" max="12" value="8">
+    <input type="range" id="working_hours_input" min="1" max="12" value="8" name="working_hours">
   </div>
   <!-- 訂單數量輸入欄位 -->
   <div class="product_counts_block">
     <label for="product_counts_input">生產數量</label>
-    <input type="number" id="product_counts_input" min="1" max="999999">
+    <input type="number" id="product_counts_input" min="1" max="999999" name="product_counts">
   </div>
   <!-- 品名顯示欄位(可選) -->
   <!-- 載入資料按紐 -->
+  <button type="button" id="data_submit_button">
+    保存並載入資料
+  </button>
 </form>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<script src="./JavaScript/form.js"></script>

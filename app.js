@@ -40,7 +40,6 @@ function injectHelloWorldButton (event) {
     if (eventPanelNode == null) return
     // 清除間隔執行器
     clearInterval(intervalInjectIcon)
-    console.log('aaa')
     // 確認有沒有按鈕的CSS選擇器
     const helloWorldButton = eventPanelNode.querySelector('.open-hello-world')
     // 如果沒有按鈕
