@@ -1,0 +1,36 @@
+.custom-table {
+  /* width: 100%; */
+  border-collapse: collapse;
+}
+
+.custom-table td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.custom-table .add_process,
+.custom-table .delete_process {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+.custom-table .process_name {
+  font-weight: bold;
+}
+
+.custom-table .process_times,
+.custom-table .cost_times {
+  text-align: center;
+}
+.process_times_input {
+  width: 70px;
+}
+/* 隱藏input 難看的箭頭*/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/*====================*/
