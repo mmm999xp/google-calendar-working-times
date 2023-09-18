@@ -22,12 +22,14 @@
   <!-- 作業人數輸入欄位 -->
   <div class="people_counts_block">
     <label for="people_counts_input">作業人數</label>
-    <input type="range" id="people_counts_input" min="1" max="10" value="4" name="people_counts">
+    <input type="range" class="input_range" id="people_counts_input" min="1" max="10" value="4" name="people_counts" oninput="showValue()">
+    <span class="people_counts_input" id="rangeValue1">4</span>
   </div>
   <!-- 當日工時輸入欄位 -->
   <div class="working_hours_block">
     <label for="working_hours_input">本日工作時數</label>
-    <input type="range" id="working_hours_input" min="1" max="12" value="8" name="working_hours">
+    <input type="range" class="input_range" id="working_hours_input" min="1" max="12" value="8" name="working_hours" oninput="showHoursValue()">
+    <span class="people_counts_input" id="rangeValue2" >8</span>
   </div>
   <!-- 訂單數量輸入欄位 -->
   <div class="product_counts_block">
@@ -41,5 +43,38 @@
   </button>
 </form>
 
+<div class="process_list">
+  
+  <table class="custom-table">
+    <tr>
+      <td><span >新增</span></td>
+      <td><span >刪除</span></td>
+      <td><span >製程名稱</span></td>
+      <td><span >平均工時</span></td>
+      <td><span >耗時</span></td>
+    </tr>
+    <!-- JS自動產生 -->
+    <!-- <tr>
+      <td><button class="add_process">十</button></td>
+      <td><button class="delete_process">一</button></td>
+      <td><span class="process_name">成品</span></td>
+      <td><input type="number" class="process_times_input" value="130"></td>
+      <td><span class="cost_times">2天15分鐘</span></td>
+    </tr> -->
+    <!-- JS自動產生 -->
+    <!-- JS自動產生 -->
+    <!-- <tr>
+      <td><button class="add_process">十</button></td>
+      <td><button class="delete_process">一</button></td>
+      <td><span class="process_name">成品</span></td>
+      <td><input type="number" class="process_times_input" value="130"></td>
+      <td><span class="cost_times">2天15分鐘</span></td>
+    </tr> -->
+    <!-- JS自動產生 -->
+  </table>
+  <div class="total_cost_times">總共花費: --天--分鐘</div> 
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 <script src="./JavaScript/form.js"></script>
+<link rel="stylesheet" href="./stylesheet/form.css">
