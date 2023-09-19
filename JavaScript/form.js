@@ -1,8 +1,6 @@
 // const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycbxHETqqmEQtDdDNbnzjkpIHaTTnivAysXKgmP-6qJlzyTof9Kg9x_t_HqD1-TtnxNSn/exec'
 const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbzoZpcFqCb9wVzRhQFgM_L3O2Sava4jqfbe7tdjPrr_tkRDxeCowYpHy9HzxKVggaBe/exec'
 const submitButton = document.querySelector('#data_submit_button')
-const peopleCountsInput = document.querySelector('#people_counts_input')
-const workinghoursInput = document.querySelector('#working_hours_input')
 const table = document.querySelector('.custom-table')
 const container = document.querySelector('.container')
 const date = document.querySelector('#date_input')
@@ -12,11 +10,17 @@ const workingHours = document.querySelector('#working_hours_input')
 const peopleCounts = document.querySelector('#people_counts_input')
 const productCounts = document.querySelector('#product_counts_input')
 const totalCostTimes = document.querySelector('#total_cost_times')
+const saveButton = document.querySelector('.save_button')
+const line = document.querySelector('#production_line')
+dayjs.extend(window.dayjs_plugin_utc)
+dayjs.extend(window.dayjs_plugin_timezone)
+dayjs.tz.setDefault('Asia/Taipei') // 設定為台灣時區
 /* 監聽器 */
-peopleCountsInput.addEventListener('input', showPeopleValue)
-workinghoursInput.addEventListener('input', showHoursValue)
+peopleCounts.addEventListener('input', showPeopleValue)
+workingHours.addEventListener('input', showHoursValue)
 table.addEventListener('click', addAndDeleteProcess)
 container.addEventListener('input', costTimesInputChange)
+saveButton.addEventListener('click', saveDateData)
 /* ========== */
 
 submitButton.addEventListener('click', () => {
@@ -39,7 +43,7 @@ submitButton.addEventListener('click', () => {
     people_counts: peopleCountsValue,
     product_counts: productCountsValue
   })
-  /* global axios */
+  /* global axios dayjs */
   axios.post(GAS_PROCESS_POST_API, data)
     .then(res => {
       console.log(res.data)
@@ -51,13 +55,14 @@ submitButton.addEventListener('click', () => {
           <td><button class="add_process">十</button></td>
           <td><button class="delete_process">一</button></td>
           <td><span class="process_name">${process.process_name}</span></td>
-          <td><input type="number" class="process_times_input" value="${process.assembly}"></td>
+          <td><input type="number" class="process_times_input" value="${process.assembly}" step="10" max="10000"></td>
           <td><span class="cost_times">${processTimes}</span></td>
         </tr>
        `
 
         table.innerHTML += tableHTML
         totalCostTimes.innerText = sumCostTimes(workingHoursValue)
+        saveButton.disabled = false // 啟用保存按鈕
       })
     })
     .catch(error => console.log(error))
@@ -71,6 +76,10 @@ function costTimes (processTimes, peopleCounts, workingHours, productCounts) {
   if (hour >= workingHours) {
     hour = hour - workingHours
     day = day + 1
+  }
+  if (processTimes === 0 || processTimes === '') {
+    day = 0
+    hour = 0
   }
   return day + '天' + hour + '小時'
 }
@@ -96,7 +105,7 @@ function addAndDeleteProcess (event) {
           <td><button class="add_process">十</button></td>
           <td><button class="delete_process">一</button></td>
           <td><input type="text" class="process_name" placeholder="請輸入製程名稱" style="width: 120px;"></td>
-          <td><input type="number" class="process_times_input"></td>
+          <td><input type="number" class="process_times_input" step="10" max="10000"></td>
           <td><span class="cost_times"></span></td>
         </tr>
        `
@@ -148,8 +157,8 @@ function sumCostTimes (workingHours) {
     const matches = item.innerText.match(/(\d+)天(\d+)小時/)
 
     if (matches) {
-      const days = parseInt(matches[1]) // 提取天數
-      const hours = parseInt(matches[2]) // 提取小時數
+      const days = Number(matches[1]) // 提取天數
+      const hours = Number(matches[2]) // 提取小時數
       totalDays = totalDays + days
       totalHours = totalHours + hours
       // 處理時間進位
@@ -160,4 +169,74 @@ function sumCostTimes (workingHours) {
     }
   })
   return '總共花費: ' + totalDays + '天' + totalHours + '小時'
+}
+// 保存所有設定
+function saveDateData () {
+  // 取得各項參數
+  let dateValue = dayjs(document.querySelector('#date_input').value) // 日期
+  const productNumberValue = productNumber.value // 品號
+  const productColorValue = productColor.value // 顏色
+  const workingHoursValue = workingHours.value // 當日工時
+  const peopleCountsValue = peopleCounts.value // 作業人數
+  const productCountsValue = productCounts.value // 生產數量
+  const totalCostTimesValue = totalCostTimes.innerText // 總耗時
+  const lineValue = line.value
+  /* ================================================================================================= */
+  /* ============處理日期資料，為了發送請求到GAS的API，儲存資料到google sheets 日期資料的工作表============ */
+  /* ================================================================================================= */
+  // 整理日期資料，排除周末(六、日)
+  const matches = totalCostTimesValue.match(/(\d+)天(\d+)小時/)
+  let days = 0
+  let hours = 0
+  // let totalHours = 0
+  if (matches) {
+    days = Number(matches[1]) // 提取天數
+    hours = Number(matches[2]) // 提取小時數
+    // totalHours = days * workingHoursValue + hours // 計算總耗時的小時數，方便後續計算
+    if (hours !== 0) days = days + 1 // 如果小時數有數字，則無條件進位一天
+  }
+  if (days === 0) return alert('總耗時天數合計為 0')
+  const reqDateDatas = []
+  // 準備資料，針對days迴圈，有幾天就增加幾筆的資料到google sheets，不包含最後一天
+  for (let i = 0; i < days - 1; i++) {
+    reqDateDatas.push({
+      date: dateValue.format('YYYY-MM-DD'),
+      working_hours: workingHoursValue,
+      people_counts: peopleCountsValue,
+      product_counts: productCountsValue,
+      product_number: productNumberValue,
+      product_color: productColorValue,
+      belong_line: lineValue,
+      current_working_times: workingHoursValue
+    })
+    // totalHours = totalHours - workingHoursValue
+    dateValue = dateValue.add(1, 'day')
+    while (isWeekend(dateValue)) { dateValue = dateValue.add(1, 'day') } // 檢測是否是假日，如果是假日就會再加一天，直到不是假日為止
+  }
+  // 處理最後一天的資料
+  reqDateDatas.push({
+    date: dateValue.format('YYYY-MM-DD'),
+    working_hours: workingHoursValue,
+    people_counts: peopleCountsValue,
+    product_counts: productCountsValue,
+    product_number: productNumberValue,
+    product_color: productColorValue,
+    belong_line: lineValue,
+    current_working_times: hours.toString() // 其他value的類別都是string，為了一致性，這邊也改成string
+  })
+  /* ================================================================================================= */
+  /* ============處理製程資料，為了發送請求到GAS的API，儲存資料到google sheets 製程關聯的工作============== */
+  /* ================================================================================================= */
+  const reqPrecessDatas = []
+  // 先取得table的所有資料
+
+  /* ================================================================================================= */
+  // 發送請求到GAS的API，儲存資料到google sheets並由GAS為google日曆發送新增事件
+  /* ================================================================================================= */
+  console.log(reqDateDatas)
+}
+
+// 給定一個日期，檢查該日期是否為周末
+function isWeekend (date) {
+  return dayjs(date).day() === 0 || dayjs(date).day() === 6 // 0 表示週日，6 表示週六
 }

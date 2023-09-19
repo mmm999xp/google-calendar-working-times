@@ -8,7 +8,7 @@
   <form action="#">
     <div class="date_block">
       <label for="date_input">日期</label>
-      <input type="date" id="date_input" disabled value="2023-09-17" name="date">
+      <input type="date" id="date_input" disabled value="2023-09-20" name="date">
     </div>
     <!-- 生產線輸入欄位 -->
     <div class="production_line_block">
@@ -51,7 +51,7 @@
     <!-- 訂單數量輸入欄位 -->
     <div class="product_counts_block">
       <label for="product_counts_input">生產數量</label>
-      <input type="number" id="product_counts_input" min="1" max="999999" name="product_counts">
+      <input type="number" id="product_counts_input" min="1" max="999999" step="100" name="product_counts">
     </div>
     <!-- 品名顯示欄位(可選) -->
     <!-- 載入資料按紐 -->
@@ -90,8 +90,14 @@
       <!-- JS自動產生 -->
     </table>
     <div class="total_cost_times" id="total_cost_times">總共花費: --天--分鐘</div> 
+    <button class="save_button" disabled>
+      保存
+    </button>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 <script src="./JavaScript/form.js"></script>
 <link rel="stylesheet" href="./stylesheet/form.css">
