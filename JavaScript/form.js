@@ -228,15 +228,33 @@ function saveDateData () {
   /* ============處理製程資料，為了發送請求到GAS的API，儲存資料到google sheets 製程關聯的工作============== */
   /* ================================================================================================= */
   const reqPrecessDatas = []
-  // 先取得table的所有資料
+  // 取得table的所有資料
+  // 選取表格所有列節點
+  const rows = table.getElementsByTagName('tr')
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i]
+    const rowData = []
+    const dateValue = dayjs(document.querySelector('#date_input').value) // 重新抓取日期，因為日期已經在前面被變更了
+    rowData.push(lineValue, dateValue.format('YYYY-MM-DD')) // 加入生產線和日期
+    // 獲取該列的所有資料
+    const cells = row.getElementsByTagName('td')
 
+    // 遍歷該列的所有資料將其加進rowData
+    for (let j = 2; j < cells.length; j++) { // 跳過+和-按鈕
+      rowData.push(cells[j].textContent || cells[j].firstChild.value) // 取得欄位資料，如果是文字欄位，使用textContent取出內容，如果是input欄位，必須向子元素取值
+    }
+
+    // 將rowData加進reqPrecessDatas
+    reqPrecessDatas.push(rowData)
+  }
   /* ================================================================================================= */
   // 發送請求到GAS的API，儲存資料到google sheets並由GAS為google日曆發送新增事件
   /* ================================================================================================= */
-  console.log(reqDateDatas)
+  console.log(reqDateDatas) // 日期資料試算表
+  console.log(reqPrecessDatas) // 製程關聯試算表
 }
 
-// 給定一個日期，檢查該日期是否為周末
+// 給定一個日期，檢查該日期是否為周末，回傳布林值
 function isWeekend (date) {
   return dayjs(date).day() === 0 || dayjs(date).day() === 6 // 0 表示週日，6 表示週六
 }
