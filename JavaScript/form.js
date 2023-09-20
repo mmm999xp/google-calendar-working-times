@@ -269,6 +269,7 @@ function saveDateData () {
     .then(([res1, res2]) => {
       console.log(res1.data.status)
       console.log(res2.data.status)
+      alert('已經全部新增完成')
     })
     .catch(error => console.log(error))
 }
