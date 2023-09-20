@@ -1,5 +1,6 @@
-// const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycbxHETqqmEQtDdDNbnzjkpIHaTTnivAysXKgmP-6qJlzyTof9Kg9x_t_HqD1-TtnxNSn/exec'
+const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycbxKk00fgCisGJKXJ_CjHsJtQ5enOqho2ob5ze647camB8v0X1L6EEvsihPtG0I2RZUh/exec'
 const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbzoZpcFqCb9wVzRhQFgM_L3O2Sava4jqfbe7tdjPrr_tkRDxeCowYpHy9HzxKVggaBe/exec'
+const GAS_PROCESS_ADDPOST_API = 'https://script.google.com/macros/s/AKfycbzLRPGW6i-KVR208KlPTrhhgA7-Zzbp3kAwDnu4KAUEyDq1R1t3whG2TlcCLKWO4vJA/exec'
 const submitButton = document.querySelector('#data_submit_button')
 const table = document.querySelector('.custom-table')
 const container = document.querySelector('.container')
@@ -196,7 +197,7 @@ function saveDateData () {
     if (hours !== 0) days = days + 1 // 如果小時數有數字，則無條件進位一天
   }
   if (days === 0) return alert('總耗時天數合計為 0')
-  const reqDateDatas = []
+  let reqDateDatas = []
   // 準備資料，針對days迴圈，有幾天就增加幾筆的資料到google sheets，不包含最後一天
   for (let i = 0; i < days - 1; i++) {
     reqDateDatas.push({
@@ -204,7 +205,7 @@ function saveDateData () {
       working_hours: workingHoursValue,
       people_counts: peopleCountsValue,
       product_counts: productCountsValue,
-      product_number: productNumberValue,
+      product_number: productNumberValue.toUpperCase(),
       product_color: productColorValue,
       belong_line: lineValue,
       current_working_times: workingHoursValue
@@ -219,7 +220,7 @@ function saveDateData () {
     working_hours: workingHoursValue,
     people_counts: peopleCountsValue,
     product_counts: productCountsValue,
-    product_number: productNumberValue,
+    product_number: productNumberValue.toUpperCase(),
     product_color: productColorValue,
     belong_line: lineValue,
     current_working_times: hours.toString() // 其他value的類別都是string，為了一致性，這邊也改成string
@@ -227,15 +228,15 @@ function saveDateData () {
   /* ================================================================================================= */
   /* ============處理製程資料，為了發送請求到GAS的API，儲存資料到google sheets 製程關聯的工作============== */
   /* ================================================================================================= */
-  const reqPrecessDatas = []
+  let reqPrecessDatas = []
   // 取得table的所有資料
   // 選取表格所有列節點
   const rows = table.getElementsByTagName('tr')
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i]
     const rowData = []
-    const dateValue = dayjs(document.querySelector('#date_input').value) // 重新抓取日期，因為日期已經在前面被變更了
-    rowData.push(lineValue, dateValue.format('YYYY-MM-DD')) // 加入生產線和日期
+    // const dateValue = dayjs(document.querySelector('#date_input').value) // 重新抓取日期，因為日期已經在前面被變更了
+    // rowData.push(lineValue, dateValue.format('YYYY-MM-DD')) // 加入生產線和日期
     // 獲取該列的所有資料
     const cells = row.getElementsByTagName('td')
 
@@ -247,11 +248,29 @@ function saveDateData () {
     // 將rowData加進reqPrecessDatas
     reqPrecessDatas.push(rowData)
   }
+  // reqPrecessDatas整理成物件格式
+  dateValue = dayjs(document.querySelector('#date_input').value) // 重新抓取日期，因為dateValue已經在前面被變更了
+  reqPrecessDatas = reqPrecessDatas.map(item => ({
+    process_name: item[0],
+    workng_times: item[1],
+    cost_times: item[2],
+    belong_line: lineValue,
+    date: dateValue.format('YYYY-MM-DD')
+  }))
   /* ================================================================================================= */
   // 發送請求到GAS的API，儲存資料到google sheets並由GAS為google日曆發送新增事件
   /* ================================================================================================= */
-  console.log(reqDateDatas) // 日期資料試算表
-  console.log(reqPrecessDatas) // 製程關聯試算表
+  reqDateDatas = JSON.stringify({ result: reqDateDatas })
+  reqPrecessDatas = JSON.stringify({ result: reqPrecessDatas })
+  return Promise.all([
+    axios.post(GAS_DATE_POST_API, reqDateDatas), // 日期資料試算表
+    axios.post(GAS_PROCESS_ADDPOST_API, reqPrecessDatas) // 製程關聯試算表
+  ])
+    .then(([res1, res2]) => {
+      console.log(res1.data.status)
+      console.log(res2.data.status)
+    })
+    .catch(error => console.log(error))
 }
 
 // 給定一個日期，檢查該日期是否為周末，回傳布林值
