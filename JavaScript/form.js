@@ -330,3 +330,12 @@ function updateProgressbar (workingHours, currentWorkingTimes = 0) {
   const widthPx = (currentWorkingTimes / workingHours) * parentBar
   bar.style.width = widthPx
 }
+
+const accessToken = 'TOKEN'
+const options = {
+  method: 'POST',
+  url: 'https://www.googleapis.com/calendar/v3/users/me/calendarList', // 取得使用者的所有日曆清單
+  headers: {
+    Authorization: `Bearer ${accessToken}`
+  }
+}
