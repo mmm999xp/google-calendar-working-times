@@ -1,11 +1,13 @@
 .container {
-  width: 600px;
+  width: 900px;
 }
 .custom-table {
   /* width: 100%; */
   border-collapse: collapse;
 }
-
+.table-title {
+  background-color: bisque;
+}
 .custom-table td {
   padding: 10px;
   border: 1px solid #ccc;
@@ -55,5 +57,5 @@ input[type=number]::-webkit-outer-spin-button {
     height: 100%;
 }
 .bar{
-  width: 50%;
+  width: 0%;
 }

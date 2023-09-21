@@ -1,6 +1,8 @@
+const GAS_PROCESS_GET_API = 'https://script.google.com/macros/s/AKfycbzoZpcFqCb9wVzRhQFgM_L3O2Sava4jqfbe7tdjPrr_tkRDxeCowYpHy9HzxKVggaBe/exec'
+const GAS_DATE_GET_API = 'https://script.google.com/macros/s/AKfycbwmc0l4wZ1cBg-K3P8QWFNyzlUKQXXjXQGjC5mSP0zES7sx0deWmRlNrF9jpVHuvqpr3Q/exec'
 const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycbxKk00fgCisGJKXJ_CjHsJtQ5enOqho2ob5ze647camB8v0X1L6EEvsihPtG0I2RZUh/exec'
-const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbzoZpcFqCb9wVzRhQFgM_L3O2Sava4jqfbe7tdjPrr_tkRDxeCowYpHy9HzxKVggaBe/exec'
-const GAS_PROCESS_ADDPOST_API = 'https://script.google.com/macros/s/AKfycbzLRPGW6i-KVR208KlPTrhhgA7-Zzbp3kAwDnu4KAUEyDq1R1t3whG2TlcCLKWO4vJA/exec'
+const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbzLRPGW6i-KVR208KlPTrhhgA7-Zzbp3kAwDnu4KAUEyDq1R1t3whG2TlcCLKWO4vJA/exec'
+const GAS_DATE_GET_BY_ID_API = 'https://script.google.com/macros/s/AKfycbydh-BmMMG_8K-HBuMnQgy93Z1Go2aWm-Hd6wSK2EQeWwC5sRcPLP6anYGxPDt-_p8QiQ/exec'
 const submitButton = document.querySelector('#data_submit_button')
 const table = document.querySelector('.custom-table')
 const container = document.querySelector('.container')
@@ -20,7 +22,7 @@ dayjs.tz.setDefault('Asia/Taipei') // 設定為台灣時區
 peopleCounts.addEventListener('input', showPeopleValue)
 workingHours.addEventListener('input', showHoursValue)
 table.addEventListener('click', addAndDeleteProcess)
-container.addEventListener('input', costTimesInputChange)
+container.addEventListener('input', inputChangeEvent)
 saveButton.addEventListener('click', saveDateData)
 /* ========== */
 
@@ -45,7 +47,7 @@ submitButton.addEventListener('click', () => {
     product_counts: productCountsValue
   })
   /* global axios dayjs */
-  axios.post(GAS_PROCESS_POST_API, data)
+  axios.post(GAS_PROCESS_GET_API, data)
     .then(res => {
       console.log(res.data)
       if (res.data.length === 0) return alert('沒有任何工時資料')
@@ -122,7 +124,7 @@ function addAndDeleteProcess (event) {
 }
 /* ============= */
 /* 若欄位有變動，即時改變耗時(cost_times)計算 */
-function costTimesInputChange (event) {
+function inputChangeEvent (event) {
   let newProcessTimes
   const target = event.target
   const allCostTimes = document.querySelectorAll('.cost_times') // 有可能透過API或是新增按鈕增加table欄位，因此必須重新抓取節點
@@ -260,11 +262,13 @@ function saveDateData () {
   /* ================================================================================================= */
   // 發送請求到GAS的API，儲存資料到google sheets並由GAS為google日曆發送新增事件
   /* ================================================================================================= */
+  // 如果req的東西是陣列，外面要包ㄧ層result
+  // 外面包一層result是為了讓GAS上面直接JSON.parse可以直接取用result裡面的陣列資料跑迴圈，沒包的話會變成物件stringify，並沒有陣列迭代方法可以用
   reqDateDatas = JSON.stringify({ result: reqDateDatas })
   reqPrecessDatas = JSON.stringify({ result: reqPrecessDatas })
   return Promise.all([
     axios.post(GAS_DATE_POST_API, reqDateDatas), // 日期資料試算表
-    axios.post(GAS_PROCESS_ADDPOST_API, reqPrecessDatas) // 製程關聯試算表
+    axios.post(GAS_PROCESS_POST_API, reqPrecessDatas) // 製程關聯試算表
   ])
     .then(([res1, res2]) => {
       console.log(res1.data.status)
@@ -274,7 +278,55 @@ function saveDateData () {
     .catch(error => console.log(error))
 }
 
+/* ================================================================================================= */
 // 給定一個日期，檢查該日期是否為周末，回傳布林值
+/* ================================================================================================= */
 function isWeekend (date) {
   return dayjs(date).day() === 0 || dayjs(date).day() === 6 // 0 表示週日，6 表示週六
+}
+
+/* ================================================================================================= */
+// 給定一日期與生產線，顯示該生產線今日的各種數據
+/* ================================================================================================= */
+function showDateData (date, workLink) {
+  // 整理成JSON格式
+  const reqDateDatas = JSON.stringify({
+    date: dayjs(date).format('YYYY-MM-DD'),
+    belong_line: workLink
+  })
+  console.log(reqDateDatas)
+  // 發送AJAX請求要求數據
+  axios.post(GAS_DATE_GET_API, reqDateDatas)
+    .then(res => {
+      console.log(res.data)
+    })
+    .catch(error => console.log(error))
+}
+/* ================================================================================================= */
+// 給定一日曆event Id，顯示該日的各種數據
+/* ================================================================================================= */
+function showDateDataByEventId (eventId) {
+  // 整理成JSON格式
+  const reqDateDatas = JSON.stringify({
+    calendar_event_id: eventId
+  })
+  // 發送AJAX請求要求數據
+  axios.post(GAS_DATE_GET_BY_ID_API, reqDateDatas)
+    .then(res => {
+      console.log(res.data)
+      updateProgressbar(workingHours.value, res.data.current_working_times)
+    })
+    .catch(error => console.log(error))
+  // 根據回傳的資料顯示在畫面上，並且如果有資料，將「保存」按鈕隱藏，將「修改」按鈕顯示出來
+}
+showDateDataByEventId('YWt2b2RhZHVyZWRvanQyZmw1bGZkMG52aW8gaXNkNnRoMTIzZmZuOGE0cGRkdDAyMHNpcTRAZw')
+/* ================================================================================================= */
+// 更新工時使用量時間條
+/* ================================================================================================= */
+function updateProgressbar (workingHours, currentWorkingTimes = 0) {
+  const parentBar = document.querySelector('.progress_bar').offsetWidth
+  const bar = document.querySelector('.bar')
+  // 計算百分比
+  const widthPx = (currentWorkingTimes / workingHours) * parentBar
+  bar.style.width = widthPx
 }
