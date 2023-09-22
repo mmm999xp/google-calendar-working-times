@@ -3,6 +3,7 @@ const GAS_DATE_GET_API = 'https://script.google.com/macros/s/AKfycbwmc0l4wZ1cBg-
 const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycbxKk00fgCisGJKXJ_CjHsJtQ5enOqho2ob5ze647camB8v0X1L6EEvsihPtG0I2RZUh/exec'
 const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbzLRPGW6i-KVR208KlPTrhhgA7-Zzbp3kAwDnu4KAUEyDq1R1t3whG2TlcCLKWO4vJA/exec'
 const GAS_DATE_GET_BY_ID_API = 'https://script.google.com/macros/s/AKfycbydh-BmMMG_8K-HBuMnQgy93Z1Go2aWm-Hd6wSK2EQeWwC5sRcPLP6anYGxPDt-_p8QiQ/exec'
+const GAS_CALENDAR_POST_API = 'https://script.google.com/macros/s/AKfycbzgGHaE82_TEwU5rEfS2PZRpYYrTStursVMNbZvk43b3-K9Qf7DVZaXncIcAkwW5C5TnA/exec'
 const submitButton = document.querySelector('#data_submit_button')
 const table = document.querySelector('.custom-table')
 const container = document.querySelector('.container')
@@ -13,6 +14,7 @@ const workingHours = document.querySelector('#working_hours_input')
 const peopleCounts = document.querySelector('#people_counts_input')
 const productCounts = document.querySelector('#product_counts_input')
 const totalCostTimes = document.querySelector('#total_cost_times')
+const dataHandlerButton = document.querySelector('.data-handler')
 const saveButton = document.querySelector('.save_button')
 const line = document.querySelector('#production_line')
 dayjs.extend(window.dayjs_plugin_utc)
@@ -23,7 +25,8 @@ peopleCounts.addEventListener('input', showPeopleValue)
 workingHours.addEventListener('input', showHoursValue)
 table.addEventListener('click', addAndDeleteProcess)
 container.addEventListener('input', inputChangeEvent)
-saveButton.addEventListener('click', saveDateData)
+dataHandlerButton.addEventListener('click', dataHandler)
+saveButton.addEventListener('click', saveData)
 /* ========== */
 
 submitButton.addEventListener('click', () => {
@@ -65,7 +68,7 @@ submitButton.addEventListener('click', () => {
 
         table.innerHTML += tableHTML
         totalCostTimes.innerText = sumCostTimes(workingHoursValue)
-        saveButton.disabled = false // 啟用保存按鈕
+        dataHandlerButton.disabled = false // 啟用保存按鈕
       })
     })
     .catch(error => console.log(error))
@@ -173,8 +176,12 @@ function sumCostTimes (workingHours) {
   })
   return '總共花費: ' + totalDays + '天' + totalHours + '小時'
 }
-// 保存所有設定
-function saveDateData () {
+let reqDateDatas = []
+let reqPrecessDatas = []
+// 處理批量複製的資料
+function dataHandler () {
+  reqDateDatas = [] // 初始化數據
+  reqPrecessDatas = [] // 初始化數據
   // 取得各項參數
   let dateValue = dayjs(document.querySelector('#date_input').value) // 日期
   const productNumberValue = productNumber.value // 品號
@@ -199,7 +206,7 @@ function saveDateData () {
     if (hours !== 0) days = days + 1 // 如果小時數有數字，則無條件進位一天
   }
   if (days === 0) return alert('總耗時天數合計為 0')
-  let reqDateDatas = []
+  
   // 準備資料，針對days迴圈，有幾天就增加幾筆的資料到google sheets，不包含最後一天
   for (let i = 0; i < days - 1; i++) {
     reqDateDatas.push({
@@ -228,9 +235,45 @@ function saveDateData () {
     current_working_times: hours.toString() // 其他value的類別都是string，為了一致性，這邊也改成string
   })
   /* ================================================================================================= */
+  /* =======================設定批量複製事件，以整理成方便發送新增日曆事件的JSON========================= */
+  /* ================================================================================================= */
+
+  document.querySelector('.modal-body').innerHTML = '' // 初始化
+  const client = document.querySelector('.client').value
+  let textNumber = 0
+  switch (lineValue) {
+    case 'first_line':
+      textNumber = '1.'
+      break
+    case 'second_line':
+      textNumber = '2.'
+      break
+    case 'third_line':
+      textNumber = '3.'
+      break
+    default:
+      textNumber = ''
+      break
+  }
+
+  for (let i = 0; i < reqDateDatas.length; i++) {
+    const text = textNumber + client + '-' + reqDateDatas[i].product_number + reqDateDatas[i].product_color + '*' + reqDateDatas[i].product_counts
+    const rowData = `
+          <label for="date${i}" class="form-label">日期</label>
+          <input type="date" id="date${i}" class="form-control  border-black" value="${reqDateDatas[i].date}">
+          <label for="summary${i}" class="form-label">標題</label>
+          <input type="text" id="summary${i}" class="form-control  border-black" value="${text}">
+          <label for="description${i}" class="form-label">描述</label>
+          <input type="text" id="description${i}" class="form-control  border-black" value="DESCR">
+          <hr>
+    `
+    document.querySelector('.modal-body').innerHTML += rowData
+  }
+
+  /* ================================================================================================= */
   /* ============處理製程資料，為了發送請求到GAS的API，儲存資料到google sheets 製程關聯的工作============== */
   /* ================================================================================================= */
-  let reqPrecessDatas = []
+
   // 取得table的所有資料
   // 選取表格所有列節點
   const rows = table.getElementsByTagName('tr')
@@ -264,20 +307,57 @@ function saveDateData () {
   /* ================================================================================================= */
   // 如果req的東西是陣列，外面要包ㄧ層result
   // 外面包一層result是為了讓GAS上面直接JSON.parse可以直接取用result裡面的陣列資料跑迴圈，沒包的話會變成物件stringify，並沒有陣列迭代方法可以用
+  // console.log(reqDateDatas)
+  // reqDateDatas = JSON.stringify({ result: reqDateDatas })
+  // reqPrecessDatas = JSON.stringify({ result: reqPrecessDatas })
+
+  // return saveData(reqDateDatas, reqPrecessDatas)
+}
+
+/* ================================================================================================= */
+// 呼叫api保存所有資料
+/* ================================================================================================= */
+function saveData (event) {
+  // 創建一個空陣列，用於存儲資料物件
+  const inputArray = []
+  // 迭代每個資料區塊，將其轉換為物件並添加到陣列中
+  for (let i = 0; i < reqDateDatas.length; i++) {
+    const dateInput = document.querySelector(`#date${i}`).value
+    const summaryInput = document.querySelector(`#summary${i}`).value
+    const descriptionInput = document.querySelector(`#description${i}`).value
+
+    const dataObject = {
+      date: dateInput,
+      summary: summaryInput,
+      description: descriptionInput
+    }
+
+    inputArray.push(dataObject)
+  }
+  // 更新日期，並為其加上summary、description
+  for (let i = 0; i < reqDateDatas.length; i++) {
+    reqDateDatas[i].date = inputArray[i].date
+    reqDateDatas[i].summary = inputArray[i].summary
+    reqDateDatas[i].description = inputArray[i].description
+  }
+
   reqDateDatas = JSON.stringify({ result: reqDateDatas })
   reqPrecessDatas = JSON.stringify({ result: reqPrecessDatas })
-  return Promise.all([
+  console.log(inputArray)
+  console.log(reqDateDatas)
+  Promise.all([
+    axios.post(GAS_CALENDAR_POST_API, reqDateDatas),
     axios.post(GAS_DATE_POST_API, reqDateDatas), // 日期資料試算表
     axios.post(GAS_PROCESS_POST_API, reqPrecessDatas) // 製程關聯試算表
   ])
-    .then(([res1, res2]) => {
+    .then(([res1, res2, res3]) => {
       console.log(res1.data.status)
       console.log(res2.data.status)
+      console.log(res3.data.status)
       alert('已經全部新增完成')
     })
     .catch(error => console.log(error))
 }
-
 /* ================================================================================================= */
 // 給定一個日期，檢查該日期是否為周末，回傳布林值
 /* ================================================================================================= */
@@ -329,6 +409,22 @@ function updateProgressbar (workingHours, currentWorkingTimes = 0) {
   // 計算百分比
   const widthPx = (currentWorkingTimes / workingHours) * parentBar
   bar.style.width = widthPx
+}
+
+function getDateFromUrl (calendarUrl) {
+  // 從 URL 中擷取 % 之間的數字
+
+  const matches = calendarUrl.match(/%2(\d+)/)
+
+  if (matches && matches.length >= 2) {
+    const matchedNumber = matches[1]
+
+    // 去掉最前面的數字
+    const extractedNumber = matchedNumber.slice(1)
+    return extractedNumber
+  } else {
+    return '格式錯誤'
+  }
 }
 
 const accessToken = 'TOKEN'

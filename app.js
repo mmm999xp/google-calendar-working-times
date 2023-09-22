@@ -11,46 +11,11 @@ const calendarHTML = document.querySelector('.tEhMVd')
 
 console.log(calendarHTML)
 console.log(head)
-head.appendChild(htmlToElement(`
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-  integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-`))
-// head.appendChild(htmlToElement(`
-// <link rel="stylesheet" href="./stylesheet/form.css">
-// `))
-head.appendChild(htmlToElement(`
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-  integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
-`))
-head.appendChild(htmlToElement(`
-
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script> 
-
-`))
-head.appendChild(htmlToElement(`
-
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
-
-`))
-head.appendChild(htmlToElement(`
-
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
-
-`))
-head.appendChild(htmlToElement(`
-
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
-
-`))
-// head.appendChild(htmlToElement(`
-
-// <script src="./JavaScript/form.js"></script>
-// `))
 console.log(head)
 calendarHTML.appendChild(htmlToElement(`
 
-<div class="container card bg-body-secondary mt-3">
+<div class=" container card border-black  bg-body-secondary p-2" id="custom-container">
 
 
   <div class="row">
@@ -88,10 +53,10 @@ calendarHTML.appendChild(htmlToElement(`
           <div class="product_color_block">
             <label for="product_color_input" class="form-label">顏色</label>
             <select name="product_color_input" id="product_color_input" class="form-select border-black mb-3">
-              <option value="none_color">無</option>
+              <option value="無">無</option>
               <option value="五彩">五彩</option>
-              <option value="鋅">鍍鋅</option>
-              <option value="鉻">鍍鉻</option>
+              <option value="鍍鋅">鍍鋅</option>
+              <option value="鍍鉻">鍍鉻</option>
               <option value="電著">電著</option>
             </select>
           </div>

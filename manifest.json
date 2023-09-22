@@ -1,7 +1,7 @@
 {
   "name": "Google Calendar Working Times",
   "description": "提供Google日曆計算與顯示產品製作工時並將其圖形化顯示的擴充功能。",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "manifest_version": 3,
   "icons": {
     "16": "icon/calendar.png",
@@ -11,10 +11,19 @@
   "content_scripts": [
     {
       "matches": [
-        "https://calendar.google.com/calendar/u/0/r/eventedit/*"
+        "https://calendar.google.com/calendar/u/0/r/eventedit*"
+      ],
+      "css": [
+        "lib/bootstrap/css/bootstrap.min.css","stylesheet/form.css"
       ],
       "js": [
-        "app.js","JavaScript/form.js"
+        "lib/dayjs/dayjs.min.js",
+        "lib/dayjs/plugin/utc.js",
+        "lib/dayjs/plugin/timezone.js",
+        "lib/axios/axios.min.js",
+        "lib/bootstrap/js/bootstrap.bundle.min.js",
+        "app.js",
+        "JavaScript/form.js"
       ]
     }
   ]
