@@ -1,5 +1,10 @@
-.container {
-  width: 900px;
+
+#custom-container{
+  min-height: 600px;
+    width: 800px;
+    position: absolute;
+    right: 90px;
+    top:70px;
 }
 .custom-table {
   /* width: 100%; */
