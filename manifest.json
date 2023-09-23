@@ -11,7 +11,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://calendar.google.com/calendar/u/0/r/eventedit*"
+        "https://calendar.google.com/calendar/*"
       ],
       "css": [
         "lib/bootstrap/css/bootstrap.min.css","stylesheet/form.css"

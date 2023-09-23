@@ -1,9 +1,9 @@
 const GAS_PROCESS_GET_API = 'https://script.google.com/macros/s/AKfycbzoZpcFqCb9wVzRhQFgM_L3O2Sava4jqfbe7tdjPrr_tkRDxeCowYpHy9HzxKVggaBe/exec'
 const GAS_DATE_GET_API = 'https://script.google.com/macros/s/AKfycbwmc0l4wZ1cBg-K3P8QWFNyzlUKQXXjXQGjC5mSP0zES7sx0deWmRlNrF9jpVHuvqpr3Q/exec'
-const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycbxKk00fgCisGJKXJ_CjHsJtQ5enOqho2ob5ze647camB8v0X1L6EEvsihPtG0I2RZUh/exec'
-const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbzLRPGW6i-KVR208KlPTrhhgA7-Zzbp3kAwDnu4KAUEyDq1R1t3whG2TlcCLKWO4vJA/exec'
+const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycby4qDjmoOifA2wMC-4Lq3GsPyrfVWhTgJIgYRxdb__mQxQRqsnK0hria1Ro3CtRDuUW/exec'
+const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbwhqIBXMAuoDKujXC8DNmLvXvvdqLNRqSSxJsgo-5xIs43-Y1xp13PsvO-Qh-rPfXLS/exec'
 const GAS_DATE_GET_BY_ID_API = 'https://script.google.com/macros/s/AKfycbydh-BmMMG_8K-HBuMnQgy93Z1Go2aWm-Hd6wSK2EQeWwC5sRcPLP6anYGxPDt-_p8QiQ/exec'
-const GAS_CALENDAR_POST_API = 'https://script.google.com/macros/s/AKfycbzgGHaE82_TEwU5rEfS2PZRpYYrTStursVMNbZvk43b3-K9Qf7DVZaXncIcAkwW5C5TnA/exec'
+const GAS_CALENDAR_POST_API = 'https://script.google.com/macros/s/AKfycbwZduyF-_oxlfDRIjp00BLZbhX93hl1uXwdc8xjqfCeMJ-ZI4zaf3vpe70GBeB8GfFTkQ/exec'
 const submitButton = document.querySelector('#data_submit_button')
 const table = document.querySelector('.custom-table')
 const container = document.querySelector('.container')
@@ -15,6 +15,7 @@ const peopleCounts = document.querySelector('#people_counts_input')
 const productCounts = document.querySelector('#product_counts_input')
 const totalCostTimes = document.querySelector('#total_cost_times')
 const dataHandlerButton = document.querySelector('.data-handler')
+const updateButton = document.querySelector('.update_button')
 const saveButton = document.querySelector('.save_button')
 const line = document.querySelector('#production_line')
 dayjs.extend(window.dayjs_plugin_utc)
@@ -68,7 +69,8 @@ submitButton.addEventListener('click', () => {
 
         table.innerHTML += tableHTML
         totalCostTimes.innerText = sumCostTimes(workingHoursValue)
-        dataHandlerButton.disabled = false // 啟用保存按鈕
+        dataHandlerButton.classList.remove('d-none')
+        updateButton.classList.add('d-none')
       })
     })
     .catch(error => console.log(error))
@@ -206,7 +208,7 @@ function dataHandler () {
     if (hours !== 0) days = days + 1 // 如果小時數有數字，則無條件進位一天
   }
   if (days === 0) return alert('總耗時天數合計為 0')
-  
+
   // 準備資料，針對days迴圈，有幾天就增加幾筆的資料到google sheets，不包含最後一天
   for (let i = 0; i < days - 1; i++) {
     reqDateDatas.push({
@@ -258,13 +260,14 @@ function dataHandler () {
 
   for (let i = 0; i < reqDateDatas.length; i++) {
     const text = textNumber + client + '-' + reqDateDatas[i].product_number + reqDateDatas[i].product_color + '*' + reqDateDatas[i].product_counts
+    const descriotion = document.querySelector('.T2Ybvb') ? document.querySelector('.T2Ybvb').innerText : ''
     const rowData = `
           <label for="date${i}" class="form-label">日期</label>
           <input type="date" id="date${i}" class="form-control  border-black" value="${reqDateDatas[i].date}">
           <label for="summary${i}" class="form-label">標題</label>
           <input type="text" id="summary${i}" class="form-control  border-black" value="${text}">
           <label for="description${i}" class="form-label">描述</label>
-          <input type="text" id="description${i}" class="form-control  border-black" value="DESCR">
+          <input type="text" id="description${i}" class="form-control  border-black" value="${descriotion}">
           <hr>
     `
     document.querySelector('.modal-body').innerHTML += rowData
@@ -342,19 +345,34 @@ function saveData (event) {
   }
 
   reqDateDatas = JSON.stringify({ result: reqDateDatas })
-  reqPrecessDatas = JSON.stringify({ result: reqPrecessDatas })
-  console.log(inputArray)
-  console.log(reqDateDatas)
-  Promise.all([
-    axios.post(GAS_CALENDAR_POST_API, reqDateDatas),
-    axios.post(GAS_DATE_POST_API, reqDateDatas), // 日期資料試算表
-    axios.post(GAS_PROCESS_POST_API, reqPrecessDatas) // 製程關聯試算表
-  ])
-    .then(([res1, res2, res3]) => {
-      console.log(res1.data.status)
-      console.log(res2.data.status)
-      console.log(res3.data.status)
-      alert('已經全部新增完成')
+
+  // console.log(inputArray)
+  // console.log(reqDateDatas)
+  axios.post(GAS_CALENDAR_POST_API, reqDateDatas)
+    .then(res => {
+      // 先將json轉回js物件
+      reqDateDatas = JSON.parse(reqDateDatas).result
+      // 將回傳的calendarEventId 加入到reqDateDatas
+      for (let i = 0; i < reqDateDatas.length; i++) {
+        reqDateDatas[i].calendar_event_id = res.data.events[i].calendarEventId
+      }
+      // 將回傳的calendarEventId 加入到reqPrecessDatas
+      for (let i = 0; i < reqPrecessDatas.length; i++) {
+        const result = res.data.events.find(event => event.date === reqPrecessDatas[i].date).calendarEventId
+        reqPrecessDatas[i].calendar_event_id = result
+      }
+      console.log(reqDateDatas)
+      console.log(reqPrecessDatas)
+      // 再次轉化回json，發送請求新增資料到google sheets
+      reqDateDatas = JSON.stringify({ result: reqDateDatas })
+      reqPrecessDatas = JSON.stringify({ result: reqPrecessDatas })
+      return Promise.all([
+        axios.post(GAS_DATE_POST_API, reqDateDatas),
+        axios.post(GAS_PROCESS_POST_API, reqPrecessDatas)
+      ])
+    })
+    .then(([res1, res2]) => {
+      alert('已經全部處理完成')
     })
     .catch(error => console.log(error))
 }
@@ -383,7 +401,7 @@ function showDateData (date, workLink) {
     .catch(error => console.log(error))
 }
 /* ================================================================================================= */
-// 給定一日曆event Id，顯示該日的各種數據
+// 給定一日曆event Id，顯示該日的各種數據，隱藏複製設定按鈕，顯示修改按鈕
 /* ================================================================================================= */
 function showDateDataByEventId (eventId) {
   // 整理成JSON格式
@@ -393,25 +411,58 @@ function showDateDataByEventId (eventId) {
   // 發送AJAX請求要求數據
   axios.post(GAS_DATE_GET_BY_ID_API, reqDateDatas)
     .then(res => {
-      console.log(res.data)
+      date.value = res.data.date
+      productNumber.value = res.data.product_number
+      productColor.value = res.data.product_color
+      workingHours.value = res.data.working_hours
+      peopleCounts.value = res.data.people_counts
+      productCounts.value = res.data.product_counts
+      const allLineOption = line.getElementsByTagName('option')
+      for (let i = 0; i < allLineOption.length; i++) {
+        if (allLineOption[i].value === res.data.belong_line) {
+          allLineOption[i].selected = true
+          break
+        }
+      }
+      const allColorOption = productColor.getElementsByTagName('option')
+      for (let i = 0; i < allColorOption.length; i++) {
+        if (allColorOption[i].value === res.data.product_counts) {
+          allColorOption[i].selected = true
+          break
+        }
+      }
+      // 更新工時使用量時間條
       updateProgressbar(workingHours.value, res.data.current_working_times)
+
+      dataHandlerButton.classList.add('d-none')
+      updateButton.classList.remove('d-none')
     })
     .catch(error => console.log(error))
-  // 根據回傳的資料顯示在畫面上，並且如果有資料，將「保存」按鈕隱藏，將「修改」按鈕顯示出來
 }
-showDateDataByEventId('YWt2b2RhZHVyZWRvanQyZmw1bGZkMG52aW8gaXNkNnRoMTIzZmZuOGE0cGRkdDAyMHNpcTRAZw')
 /* ================================================================================================= */
 // 更新工時使用量時間條
 /* ================================================================================================= */
 function updateProgressbar (workingHours, currentWorkingTimes = 0) {
-  const parentBar = document.querySelector('.progress_bar').offsetWidth
+  const barContent = document.querySelector('.bar_content')
   const bar = document.querySelector('.bar')
   // 計算百分比
-  const widthPx = (currentWorkingTimes / workingHours) * parentBar
-  bar.style.width = widthPx
+  const widthPercent = (currentWorkingTimes / workingHours) * 100
+  barContent.innerText = `工時使用量 : ${currentWorkingTimes}小時 / ${workingHours}小時`
+  bar.style.width = `${widthPercent}%`
 }
 
-function getDateFromUrl (calendarUrl) {
+// https://calendar.google.com/calendar/u/0/r/eventedit/NHAxNTFidm1ubHNtMGduYjFwZHA4aDNvYTAgbW1tOTk5eH... 擷取最後面的部分
+function getCalendarId (calendarUrl) {
+  // 使用 split 方法將網址分割成陣列，以斜槓為分隔符
+  const segments = calendarUrl.split('/')
+
+  // 獲取陣列中的最後一個元素，即最後一個斜槓後的所有字元
+  const lastSegment = segments[segments.length - 1]
+  return lastSegment
+}
+
+// https://calendar.google.com/calendar/u/0/r/eventedit?overrides=%5Bnull%2Cnull%2C%2220230913%...擷取2023-09-13的部分
+function getDateFromUrl(calendarUrl) {
   // 從 URL 中擷取 % 之間的數字
 
   const matches = calendarUrl.match(/%2(\d+)/)
@@ -421,17 +472,14 @@ function getDateFromUrl (calendarUrl) {
 
     // 去掉最前面的數字
     const extractedNumber = matchedNumber.slice(1)
-    return extractedNumber
+    const year = extractedNumber.substr(0, 4)
+    const month = extractedNumber.substr(4, 2)
+    const day = extractedNumber.substr(6, 2)
+
+    // 使用連字符（-）組合成所需的日期格式
+    const formattedDate = `${year}-${month}-${day}`
+    return formattedDate
   } else {
     return '格式錯誤'
-  }
-}
-
-const accessToken = 'TOKEN'
-const options = {
-  method: 'POST',
-  url: 'https://www.googleapis.com/calendar/v3/users/me/calendarList', // 取得使用者的所有日曆清單
-  headers: {
-    Authorization: `Bearer ${accessToken}`
   }
 }

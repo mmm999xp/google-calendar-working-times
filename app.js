@@ -1,21 +1,12 @@
-console.log('app.js')
 /* =========== CONSTANTS =========== */
-const CALENDAR_EVENT_SELECTOR = '.NlL62b[data-eventid]' // css選擇器
-const INTERVAL_DELAY = 50
-const EVENT_PANEL_SELECTOR = '.pPTZAe'
-
+const CANCEL_BUTTON_SELECTOR = '.TbpVhb'
 /* ================================= */
 
-const head = document.querySelector('head')
 const calendarHTML = document.querySelector('.tEhMVd')
 
-console.log(calendarHTML)
-console.log(head)
-
-console.log(head)
 calendarHTML.appendChild(htmlToElement(`
 
-<div class=" container card border-black  bg-body-secondary p-2" id="custom-container">
+<div class=" container card border-black  bg-body-secondary p-2 d-none" id="custom-container">
 
 
   <div class="row">
@@ -29,7 +20,7 @@ calendarHTML.appendChild(htmlToElement(`
           <label for="check_work_times">啟用工時計算</label>
         </div>
         <!-- 表單 -->
-        <form action="#">
+        <form action="#" class="work_form">
           <div class="date_block ">
             <label for="date_input" class="form-label">日期</label>
             <input type="date" class="form-control " id="date_input" disabled value="2023-09-27" name="date">
@@ -42,6 +33,9 @@ calendarHTML.appendChild(htmlToElement(`
               <option value="first_line">一線</option>
               <option value="second_line">二線</option>
               <option value="third_line">三線</option>
+              <option value="riveting_line">中空/鉚合</option>
+              <option value="middle_pole_line">中桿</option>
+              <option value="test" >測試</option>
             </select>
           </div>
           <!-- 名稱輸入欄位 -->
@@ -119,15 +113,19 @@ calendarHTML.appendChild(htmlToElement(`
           <!-- JS自動產生 -->
         </table>
         <h3 class="total_cost_times" id="total_cost_times">總共花費: --天--分鐘</h3>
-        <button class="save_button btn btn-primary" disabled>
-          保存
+        <div class="modal-client">
+          <label for="client" class="form-label h3">客戶</label>
+          <input type="text" id="client" class=" client border-black" >
+        </div>
+        <button class=" btn btn-primary data-handler d-none" data-bs-toggle="modal" data-bs-target="#staticBackdrop" >
+          複製日期
         </button>
-        <button class="update_button btn btn-primary" disabled style="display: none;">
-          修改
+        <button class="update_button btn btn-primary d-none" disabled >
+          修改設定
         </button>
       </div>
       <div class="progress_block">
-        <h4 for="bar">工時使用量 :</h4>
+        <h4 for="bar" class="bar_content">工時使用量 :</h4>
         <div class="progress_bar">
           <div class="current_working_times bar" id="bar"></div>
         </div>
@@ -135,92 +133,82 @@ calendarHTML.appendChild(htmlToElement(`
       
     </div>
   </div>
-
+  <!-- 根據日期選擇要輸入的描述 -->
+  <!-- Button trigger modal -->
+  <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    Launch static backdrop modal
+  </button> -->
   
-
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">批量複製設定</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
   
+        <div class="modal-body">
+          <!-- <label for="date" class="form-label">日期</label>
+          <input type="date" id="date" class="form-control  border-black" value="2023-09-27">
+          <label for="summary" class="form-label">標題</label>
+          <input type="text" id="summary" class="form-control  border-black" value="1.SHT-YIH001五彩*1000">
+          <label for="description" class="form-label">描述</label>
+          <input type="text" id="description" class="form-control  border-black" value="本體預計xx/xx回">
+          <hr> -->
+        </div>
+  
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+          <button type="button" class="btn btn-primary save_button">確認複製</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--  -->
 </div>
 
 
-
 `))
-
-function getHelloWorldButton (eventId) {
-  return `
-  <button class="open-hello-world" data-id="${eventId}" 
-    style="background: none;
-      border: none;cursor: pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" height="20px" width="20px" viewBox="0 0 512 512">
-          <!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-          <path d="M464 256A208 208 0 1 1 48 256a208 208 0 1 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/>
-        </svg>
-  </button>
-  `
-}
-
-/* =========== VARIABLES  ============ */
-let intervalInjectIcon
-/* ================================= */
-function app () {
-  addEvent(document, 'click', CALENDAR_EVENT_SELECTOR, (e) => {
-    injectHelloWorldButton(e)
-  })
-  addEvent(document, 'click', '.open-hello-world', () => {
-    alert('Hello World')
-  })
-}
-function injectHelloWorldButton (event) {
-  const eventId = event.target.getAttribute('data-eventid')
-  // 清除現有的間隔，避免setInterval重複添加
-  clearInterval(intervalInjectIcon)
-  // setInterval設定間隔執行器，每50單位檢測按鈕是否被添加
-  intervalInjectIcon = setInterval(function () {
-    // 如果沒找到事件面板工具列選擇器則直接return
-    const eventPanelNode = document.querySelector(EVENT_PANEL_SELECTOR)
-
-    if (eventPanelNode == null) return
-    // 清除間隔執行器
-    clearInterval(intervalInjectIcon)
-    // 確認有沒有按鈕的CSS選擇器
-    const helloWorldButton = eventPanelNode.querySelector('.open-hello-world')
-    // 如果沒有按鈕
-    if (helloWorldButton == null) {
-      // 傳入事件面板與日曆事件的id作為參數呼叫prependHelloWorldButton函式添加按鈕
-      prependHelloWorldButton(eventPanelNode, eventId)
-    }
-  }, INTERVAL_DELAY)
-}
-
-function prependHelloWorldButton (eventPanelNode, eventId) {
-  const helloWorldButton = getHelloWorldButton(eventId)
-  eventPanelNode.prepend(htmlToElement(helloWorldButton))
-}
-
-function addEvent (parent, evt, selector, handler) {
-  parent.addEventListener(
-    evt,
-    function (event) {
-      if (event.target.matches(selector + ', ' + selector + ' *')) {
-        handler.apply(event.target.closest(selector), arguments)
+/* global getDateFromUrl showDateDataByEventId getCalendarId */
+window.addEventListener('popstate', function (event) {
+  // 重置頁面設定
+  document.querySelector('.work_form').reset()
+  document.querySelector('.bar').style.width = '0%'
+  console.log('畫面改變囉')
+  // google日曆採用SPA操作，動態重寫當前頁面來與使用者互動，而非傳統的從伺服器重新載入整個新頁面，避免了頁面之間切換打斷使用者體驗。
+  // dom操作需要時間，如果沒有包一層setTimeout會無法正確捕捉到currentURL.includes('eventedit')的結果
+  setTimeout(() => {
+    const currentURL = window.location.href
+    if (currentURL.includes('eventedit')) {
+      console.log('我有進來囉')
+      const container = document.querySelector('#custom-container')
+      container.classList.remove('d-none')
+      if (currentURL.includes('eventedit?')) {
+        const date = getDateFromUrl(currentURL)
+        document.querySelector('#date_input').value = date
+      } else {
+        showDateDataByEventId(getCalendarId(currentURL))
       }
-    },
-    false
-  )
-}
+      // 如果點擊了取消活動變更的按鈕，隱藏日曆工時UI
+      setTimeout(() => {
+        document.querySelector(CANCEL_BUTTON_SELECTOR).addEventListener('click', () => {
+          const container = document.querySelector('#custom-container')
+          container.classList.add('d-none')
+        })
+      }, 200)
+    } else {
+      console.log('我沒有進來囉')
+      const container = document.querySelector('#custom-container')
+      container.classList.add('d-none')
+    }
+  }, 50)
+})
+
 function htmlToElement (html) {
   const template = document.createElement('template')
   html = html.trim() // Never return a text node with whitespace as the result
   template.innerHTML = html
   return template.content.firstChild
 }
-
-/** ========== READY EVENT ========== */
-if (
-  document.readyState === 'complete' ||
-  (document.readyState !== 'loading' && !document.documentElement.doScroll)
-) {
-  app()
-} else {
-  document.addEventListener('DOMContentLoaded', app)
-}
-/** ======================================== */
