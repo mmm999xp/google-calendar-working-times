@@ -15,9 +15,10 @@ const peopleCounts = document.querySelector('#people_counts_input')
 const productCounts = document.querySelector('#product_counts_input')
 const totalCostTimes = document.querySelector('#total_cost_times')
 const dataHandlerButton = document.querySelector('.data-handler')
-const updateButton = document.querySelector('.update_button')
 const saveButton = document.querySelector('.save_button')
 const line = document.querySelector('#production_line')
+// 遮罩
+const loader = document.querySelector('#loader')
 dayjs.extend(window.dayjs_plugin_utc)
 dayjs.extend(window.dayjs_plugin_timezone)
 dayjs.tz.setDefault('Asia/Taipei') // 設定為台灣時區
@@ -31,6 +32,7 @@ saveButton.addEventListener('click', saveData)
 /* ========== */
 
 submitButton.addEventListener('click', () => {
+  loader.style.display = 'flex'
   /* ======取得資料====== */
   const dateValue = date.value
   const productNumberValue = productNumber.value.toUpperCase()
@@ -69,8 +71,13 @@ submitButton.addEventListener('click', () => {
 
         table.innerHTML += tableHTML
         totalCostTimes.innerText = sumCostTimes(workingHoursValue)
-        dataHandlerButton.classList.remove('d-none')
-        updateButton.classList.add('d-none')
+        // dataHandlerButton.classList.remove('d-none')
+        if (window.location.href.includes('eventedit?')) {
+          dataHandlerButton.disabled = false
+          dataHandlerButton.classList.add('btn-primary')
+          dataHandlerButton.classList.remove('btn-secondary')
+        }
+        loader.style.display = 'none'
       })
     })
     .catch(error => console.log(error))
@@ -367,11 +374,11 @@ function saveData (event) {
       reqDateDatas = JSON.stringify({ result: reqDateDatas })
       reqPrecessDatas = JSON.stringify({ result: reqPrecessDatas })
       return Promise.all([
-        axios.post(GAS_DATE_POST_API, reqDateDatas),
-        axios.post(GAS_PROCESS_POST_API, reqPrecessDatas)
+        axios.post(GAS_DATE_POST_API, reqDateDatas)
+      //  axios.post(GAS_PROCESS_POST_API, reqPrecessDatas)
       ])
     })
-    .then(([res1, res2]) => {
+    .then(([res1]) => {
       alert('已經全部處理完成')
     })
     .catch(error => console.log(error))
@@ -404,6 +411,8 @@ function showDateData (date, workLink) {
 // 給定一日曆event Id，顯示該日的各種數據，隱藏複製設定按鈕，顯示修改按鈕
 /* ================================================================================================= */
 function showDateDataByEventId (eventId) {
+  // 啟用載入中的遮罩
+  loader.style.display = 'flex'
   // 整理成JSON格式
   const reqDateDatas = JSON.stringify({
     calendar_event_id: eventId
@@ -411,12 +420,12 @@ function showDateDataByEventId (eventId) {
   // 發送AJAX請求要求數據
   axios.post(GAS_DATE_GET_BY_ID_API, reqDateDatas)
     .then(res => {
-      date.value = res.data.date
-      productNumber.value = res.data.product_number
-      productColor.value = res.data.product_color
-      workingHours.value = res.data.working_hours
-      peopleCounts.value = res.data.people_counts
-      productCounts.value = res.data.product_counts
+      date.value = res.data.date || ''
+      productNumber.value = res.data.product_number || ''
+      productColor.value = res.data.product_color || ''
+      workingHours.value = res.data.working_hours || ''
+      peopleCounts.value = res.data.people_counts || ''
+      productCounts.value = res.data.product_counts || ''
       const allLineOption = line.getElementsByTagName('option')
       for (let i = 0; i < allLineOption.length; i++) {
         if (allLineOption[i].value === res.data.belong_line) {
@@ -434,8 +443,12 @@ function showDateDataByEventId (eventId) {
       // 更新工時使用量時間條
       updateProgressbar(workingHours.value, res.data.current_working_times)
 
-      dataHandlerButton.classList.add('d-none')
-      updateButton.classList.remove('d-none')
+      dataHandlerButton.innerText = '已保存'
+      dataHandlerButton.disabled = true
+      dataHandlerButton.classList.remove('btn-primary')
+      dataHandlerButton.classList.add('btn-secondary')
+      // 隱藏遮罩，讓使用者可輸入
+      loader.style.display = 'none'
     })
     .catch(error => console.log(error))
 }
@@ -446,8 +459,14 @@ function updateProgressbar (workingHours, currentWorkingTimes = 0) {
   const barContent = document.querySelector('.bar_content')
   const bar = document.querySelector('.bar')
   // 計算百分比
-  const widthPercent = (currentWorkingTimes / workingHours) * 100
+  let widthPercent = (currentWorkingTimes / workingHours) * 100
   barContent.innerText = `工時使用量 : ${currentWorkingTimes}小時 / ${workingHours}小時`
+  if (widthPercent > 100) {
+    bar.style.backgroundColor = 'red'
+    widthPercent = 100
+  } else {
+    bar.style.backgroundColor = 'rgb(116, 194, 92)'
+  }
   bar.style.width = `${widthPercent}%`
 }
 
@@ -481,5 +500,20 @@ function getDateFromUrl(calendarUrl) {
     return formattedDate
   } else {
     return '格式錯誤'
+  }
+}
+
+// 將2023年10月4日轉換成YYYY-MM-DD格式
+function textToDate (text) {
+  const dateMatch = text.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/)
+  if (dateMatch) {
+    const year = parseInt(dateMatch[1])
+    const month = parseInt(dateMatch[2])
+    const day = parseInt(dateMatch[3])
+    // 可能要補 0，所以先轉化成dayjs日期物件再format
+    const formattedDate = dayjs(`${year}-${month}-${day}`).format('YYYY-MM-DD')
+    return formattedDate
+  } else {
+    return '錯誤的日期格式'
   }
 }
