@@ -5,6 +5,7 @@ const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbwhqIBXMAu
 const GAS_DATE_GET_BY_ID_API = 'https://script.google.com/macros/s/AKfycbydh-BmMMG_8K-HBuMnQgy93Z1Go2aWm-Hd6wSK2EQeWwC5sRcPLP6anYGxPDt-_p8QiQ/exec'
 const GAS_CALENDAR_POST_API = 'https://script.google.com/macros/s/AKfycbwZduyF-_oxlfDRIjp00BLZbhX93hl1uXwdc8xjqfCeMJ-ZI4zaf3vpe70GBeB8GfFTkQ/exec'
 const GAS_DATE_DELETE_API = 'https://script.google.com/macros/s/AKfycbyCWKMC8QcVuvc9NFSw1viKifjDp-xfYIuwFjtPFSw9ohhbb3K70mEbTsDLKzaP_g4b/exec'
+const GAS_WORKING_TIMES_GET_API = 'https://script.google.com/macros/s/AKfycbzsgl3N5AkcBiCin3Kh30OfdbIGcaZxFsIq8gkAmwsecaR-AT04Y2vwO_NO1J2TCyXXIw/exec'
 const submitButton = document.querySelector('#data_submit_button')
 const table = document.querySelector('.custom-table')
 const container = document.querySelector('.container')
@@ -18,6 +19,7 @@ const totalCostTimes = document.querySelector('#total_cost_times')
 const dataHandlerButton = document.querySelector('.data-handler')
 const saveButton = document.querySelector('.save_button')
 const line = document.querySelector('#production_line')
+const workingTimeOverViewButton = document.querySelector('#working_timeOver-view')
 // 遮罩
 const loader = document.querySelector('#loader')
 dayjs.extend(window.dayjs_plugin_utc)
@@ -31,6 +33,7 @@ container.addEventListener('input', inputChangeEvent)
 dataHandlerButton.addEventListener('click', dataHandler)
 saveButton.addEventListener('click', saveData)
 window.addEventListener('click', deleteEvent)
+workingTimeOverViewButton.addEventListener('click', workingTimeOverViewEvent)
 /* ========== */
 
 submitButton.addEventListener('click', () => {
@@ -330,6 +333,10 @@ function dataHandler () {
 // 呼叫api保存所有資料
 /* ================================================================================================= */
 function saveData (event) {
+  document.querySelector('#modal_message').innerText = '處理中，請耐心等候'
+  saveButton.disabled = true
+  saveButton.classList.remove('btn-primary')
+  saveButton.classList.add('btn-secondary')
   // 創建一個空陣列，用於存儲資料物件
   const inputArray = []
   // 迭代每個資料區塊，將其轉換為物件並添加到陣列中
@@ -381,7 +388,13 @@ function saveData (event) {
       ])
     })
     .then(([res1]) => {
-      alert('已經全部處理完成')
+      // alert('已經全部處理完成')
+      document.querySelector('#modal_message').innerText = '按下確認後，處理需要一段時間'
+      saveButton.disabled = false
+      saveButton.classList.add('btn-primary')
+      saveButton.classList.remove('btn-secondary')
+      document.querySelector('.btn-close').click()
+      window.history.back()
     })
     .catch(error => console.log(error))
 }
@@ -483,7 +496,7 @@ function getCalendarId (calendarUrl) {
 }
 
 // https://calendar.google.com/calendar/u/0/r/eventedit?overrides=%5Bnull%2Cnull%2C%2220230913%...擷取2023-09-13的部分
-function getDateFromUrl(calendarUrl) {
+function getDateFromUrl (calendarUrl) {
   // 從 URL 中擷取 % 之間的數字
 
   const matches = calendarUrl.match(/%2(\d+)/)
@@ -507,6 +520,7 @@ function getDateFromUrl(calendarUrl) {
 
 // 將2023年10月4日轉換成YYYY-MM-DD格式
 function textToDate (text) {
+  document.getElementById('modalContainer').innerText = ''
   const dateMatch = text.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/)
   if (dateMatch) {
     const year = parseInt(dateMatch[1])
@@ -535,6 +549,163 @@ function deleteEvent (event) {
     console.log(reqDeleteDate)
     // 發送請求刪除該event id 的資料
     axios.post(GAS_DATE_DELETE_API, reqDeleteDate)
-      .then(res => console.log(res.data))
+      .then(res => {
+        console.log(res.data)
+        document.querySelector('#overlay').style.display = 'none'
+      })
   }
 }
+function workingTimeOverViewEvent () {
+  const dayCounts = document.querySelector('#dayCounts').value
+  if (dayCounts === '') {
+    document.querySelector('#overview_message').innerText = '請輸入天數'
+    return
+  }
+  if (dayCounts > 100) {
+    document.querySelector('#overview_message').innerText = '請輸入小於100的整數'
+    return
+  }
+  const date = document.querySelector('#date1').value
+  if (date === '') {
+    document.querySelector('#overview_message').innerText = '請選擇日期'
+    return
+  }
+  getWorkingTimesFromDate(date, dayCounts)
+}
+/* ================================================================================================= */
+// 給定一日期，獲取所有生產線自定義天數(最多為100)的工時數據
+/* ================================================================================================= */
+function getWorkingTimesFromDate (date, dayCounts) {
+  if (dayCounts > 100) dayCounts = 100
+  // 設定起始日期
+  let startDate = dayjs(date)
+  const resultArray = []
+  // 開始迴圈，直到找到指定個符合條件的日期
+  while (resultArray.length < dayCounts) {
+    // 檢查當前日期是否是周日（0）
+    if (startDate.day() !== 0) {
+      // 如果不是周末，將該日期添加到結果陣列
+      resultArray.push(startDate.format('YYYY-MM-DD'))
+    }
+    // 將日期往後移一天
+    startDate = startDate.add(1, 'day')
+  }
+  const reqGetWorkingTimes = JSON.stringify({ result: resultArray })
+  // 請求數據
+  axios.post(GAS_WORKING_TIMES_GET_API, reqGetWorkingTimes)
+    .then(res => workingTimeOverView(res.data.status, date))
+}
+
+function workingTimeOverView (data, date) {
+  console.log(data)
+  // 假設您希望生成的欄位數量
+  const totalColumns = document.querySelector('#dayCounts').value
+
+  // 假設每行的欄位數量
+  const columnsPerRow = 5
+
+  // 取得 modal 容器元素
+  const modalContainer = document.getElementById('modalContainer')
+  modalContainer.innerHTML = ''
+  // 創建 modal 的內容
+  const modalBody = document.createElement('div')
+  modalBody.classList.add('modal-body')
+
+  // 創建容納欄位的 row 容器
+  let row = null
+
+  // 開始日期
+  const startDate = new Date(date)
+  const endDate = new Date(date)
+  endDate.setDate(endDate.getDate() + (totalColumns - 1)) // 假設要顯示20個日期
+
+  // 創建一個字典來存儲日期和對應的數據
+  const dateDataMap = {}
+
+  // 遍歷數據並填充字典
+  data.forEach(item => {
+    const formattedDate = item.date
+    if (!dateDataMap[formattedDate]) {
+      dateDataMap[formattedDate] = []
+    }
+    dateDataMap[formattedDate].push(item)
+  })
+
+  for (let currentDate = new Date(startDate); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+    // 每5個欄位換一列
+    if (modalBody.children.length % columnsPerRow === 0) {
+      row = document.createElement('div')
+      row.classList.add('row')
+      modalBody.appendChild(row)
+    }
+
+    // 創建欄位
+    const column = document.createElement('div')
+    column.classList.add('col-md-2', 'border', 'border-dark', 'col-content')
+    const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`
+    column.textContent = formattedDate // 欄位內容
+
+    // 檢查數據中是否有匹配的日期
+    const matchingData = dateDataMap[formattedDate]
+
+    // 創建進度條結構，如果有匹配的數據，則根據數據創建進度條，否則創建空的進度條
+    for (let j = 1; j <= 3; j++) {
+      const progressBar = document.createElement('div')
+      progressBar.classList.add('progress_bar')
+
+      const currentWorkingTimes = document.createElement('div')
+      currentWorkingTimes.classList.add('current_working_times', 'bar')
+
+      if (matchingData && matchingData.length > 0) {
+        // 找到匹配的數據
+        const lineData = matchingData.filter(item => item.belong_line === `line${j}`)
+        if (lineData.length > 0) {
+          // 計算合併後的 .bar 的寬度
+          const totalCurrentWorkingTimes = lineData.reduce((acc, item) => acc + item.current_working_times, 0)
+          const totalWorkingHours = lineData[0].working_hours // 假設多個 line 的 working_hours 相同
+          let progressPercentage = (totalCurrentWorkingTimes / totalWorkingHours) * 100
+          let Exceeded = false
+          // 確保寬度不超過100%
+          if (progressPercentage > 100) {
+            progressPercentage = 100
+            Exceeded = true
+          }
+
+          currentWorkingTimes.style.width = `${progressPercentage}%`
+
+          // 設置文字內容
+          currentWorkingTimes.textContent = `${totalCurrentWorkingTimes}/${totalWorkingHours}`
+
+          // 設置對應的 class 名稱
+          currentWorkingTimes.classList.add(lineData[0].belong_line)
+
+          // 根據進度設置背景顏色
+          if (Exceeded) {
+            currentWorkingTimes.style.backgroundColor = 'red'
+          } else {
+            // currentWorkingTimes.style.backgroundColor = 'rgb(116, 194, 92)';
+          }
+        } else {
+          // 如果沒有匹配的數據，則創建空的進度條
+          currentWorkingTimes.textContent = ''// '0/0';
+          currentWorkingTimes.style.width = '0%'
+        }
+      } else {
+        // 如果沒有匹配的數據，則創建空的進度條
+        currentWorkingTimes.textContent = '' // '0/0';
+        currentWorkingTimes.style.width = '0%'
+      }
+
+      // 將進度條結構添加到欄位中
+      progressBar.appendChild(currentWorkingTimes)
+      column.appendChild(progressBar)
+    }
+
+    // 將欄位添加到 row 中
+    row.appendChild(column)
+  }
+
+  // 將 modalBody 添加到 modalContainer 中
+  modalContainer.appendChild(modalBody)
+}
+// workingTimeOverView()

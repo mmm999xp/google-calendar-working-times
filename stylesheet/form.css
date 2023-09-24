@@ -45,28 +45,39 @@ input[type=number]::-webkit-outer-spin-button {
 }
 /*====================*/
 /* bar */
-.progress_bar{
+.col-content {
+  height: 150px;
+  width: 240px;
+}
+/* bar */
+.progress_bar {
   background-color: rgb(192, 192, 192);
-    width: 80%;
-    border-radius: 15px;
-    height: 25px;
-    width: 300px;
+  width: 200px;
+  border-radius: 15px;
+  height: 25px;
+  margin-bottom: 10px;
 }
-.current_working_times{
+
+.current_working_times {
   background-color: rgb(116, 194, 92);
-    color: white;
-    /* padding: 1%; */
-    text-align: right;
-    font-size: 20px;
-    border-radius: 15px;
-    height: 100%;
+  color: white;
+  /*     padding: 1%; */
+  text-align: right;
+  font-size: 18px;
+  border-radius: 15px;
+  height: 100%;
 }
-.bar{
-  width: 0%;
+
+.bar {
+  width: 70%;
 }
-.barContent{
+
+.line3 {
+  background-color: rgb(170, 188, 100);
+}
+/* .barContent{
   text-align: center;
-}
+} */
 
 #overlay {
   position: fixed;

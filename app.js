@@ -1,5 +1,7 @@
 /* =========== CONSTANTS =========== */
 const CANCEL_BUTTON_SELECTOR = '.TbpVhb'
+const GOOGLE_SAVE_BUTTON_SELECTOR = '#xSaveBu'
+
 const GAS_DATE_PUT_API = 'https://script.google.com/macros/s/AKfycbyrTmcBtNK4AJJBLsD8EZjWzXEWsUOY_mwqrknBJSSi6R0GPf6zc939WwceDw43SfYv/exec'
 /* ================================= */
 let eventId = ''
@@ -87,10 +89,9 @@ document.querySelector('#overlay').addEventListener('click', function () {
   overlay.style.display = 'none'
 })
 
-
 calendarHTML.appendChild(htmlToElement(`
 
-<div class=" container card border-black  bg-body-secondary p-2 d-none" id="custom-container">
+<div class=" container card border border-dark  bg-body-secondary p-2 d-none" id="custom-container">
   <div id="loader">載入中...</div>
   <div class="row">
     <!-- 左側內容：表單 -->
@@ -240,13 +241,45 @@ calendarHTML.appendChild(htmlToElement(`
         </div>
   
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+          <span id="modal_message">按下確認後，處理需要一段時間</span>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" >關閉</button>
           <button type="button" class="btn btn-primary save_button">確認複製</button>
         </div>
       </div>
     </div>
   </div>
   <!--  -->
+  <!-- 工時使用量總覽 -->
+  <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal" style="margin-top: 1%;" >
+    工時資料總覽
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade modal-xl" id="exampleModal"  tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content" style="width: 1280px">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">工時使用量總覽</h5>
+          <label for="dayCounts" class="modal-title" style="font-size:20px; margin: 0 0.5% 0  5% ;">天數</label>
+          <input type="number" class="form-control border border-dark" style="width:10%;" id="dayCounts"  min="1" max="100" step="5"
+            name="dayCounts">
+          <label for="date1" class="modal-title" style="font-size:20px; margin: 0 0.5% 0  5% ;">選擇日期</label>
+          <input type="date" class="form-control border border-dark" id="date1" style="width:20%;margin-right: 1.5%;">
+          <span>---</span>
+          <input type="date" class="form-control border border-dark" style="width:20%;margin-left: 1.5%;" disabled>     
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div id="modalContainer" class="container modal-body">
+          <!-- js -->
+        </div>
+        <div class="modal-footer">
+          <span id="overview_message" style="margin-right: 2%;"></span>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+          <button type="button" class="btn btn-primary" id="working_timeOver-view">載入資料</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -257,6 +290,16 @@ window.addEventListener('popstate', function (event) {
   document.querySelector('.work_form').reset()
   document.querySelector('.bar').style.width = '0%'
   document.querySelector('.bar_content').innerText = '工時使用量 : ---小時 / ---小時 '
+  document.querySelector('#client').value = ''
+  document.querySelector('.custom-table').innerHTML = `
+  <tr class="table-title">
+    <td><span>新增</span></td>
+    <td><span>刪除</span></td>
+    <td><span>製程名稱</span></td>
+    <td><span>平均工時</span></td>
+    <td><span>耗時</span></td>
+  </tr>
+  `
   console.log('畫面改變囉')
   // google日曆採用SPA操作，動態重寫當前頁面來與使用者互動，而非傳統的從伺服器重新載入整個新頁面，避免了頁面之間切換打斷使用者體驗。
   // dom操作需要時間，如果沒有包一層setTimeout會無法正確捕捉到currentURL.includes('eventedit')的結果
@@ -277,9 +320,14 @@ window.addEventListener('popstate', function (event) {
       } else {
         showDateDataByEventId(getCalendarId(currentURL))
       }
-      // 如果點擊了取消活動變更的按鈕，隱藏日曆工時UI
+      // 如果點擊了取消活動變更或保存的按鈕，隱藏日曆工時UI
       setTimeout(() => {
         document.querySelector(CANCEL_BUTTON_SELECTOR).addEventListener('click', () => {
+          const container = document.querySelector('#custom-container')
+          container.classList.add('d-none')
+        })
+        document.querySelector(GOOGLE_SAVE_BUTTON_SELECTOR).addEventListener('click', () => {
+
           const container = document.querySelector('#custom-container')
           container.classList.add('d-none')
         })
