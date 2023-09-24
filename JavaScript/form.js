@@ -4,6 +4,7 @@ const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycby4qDjmoOifA2
 const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbwhqIBXMAuoDKujXC8DNmLvXvvdqLNRqSSxJsgo-5xIs43-Y1xp13PsvO-Qh-rPfXLS/exec'
 const GAS_DATE_GET_BY_ID_API = 'https://script.google.com/macros/s/AKfycbydh-BmMMG_8K-HBuMnQgy93Z1Go2aWm-Hd6wSK2EQeWwC5sRcPLP6anYGxPDt-_p8QiQ/exec'
 const GAS_CALENDAR_POST_API = 'https://script.google.com/macros/s/AKfycbwZduyF-_oxlfDRIjp00BLZbhX93hl1uXwdc8xjqfCeMJ-ZI4zaf3vpe70GBeB8GfFTkQ/exec'
+const GAS_DATE_DELETE_API = 'https://script.google.com/macros/s/AKfycbyCWKMC8QcVuvc9NFSw1viKifjDp-xfYIuwFjtPFSw9ohhbb3K70mEbTsDLKzaP_g4b/exec'
 const submitButton = document.querySelector('#data_submit_button')
 const table = document.querySelector('.custom-table')
 const container = document.querySelector('.container')
@@ -29,6 +30,7 @@ table.addEventListener('click', addAndDeleteProcess)
 container.addEventListener('input', inputChangeEvent)
 dataHandlerButton.addEventListener('click', dataHandler)
 saveButton.addEventListener('click', saveData)
+window.addEventListener('click', deleteEvent)
 /* ========== */
 
 submitButton.addEventListener('click', () => {
@@ -515,5 +517,24 @@ function textToDate (text) {
     return formattedDate
   } else {
     return '錯誤的日期格式'
+  }
+}
+function deleteEvent (event) {
+  // 刪除按鈕有可能點到svg也可能點到path，也可能點到button
+  if (event.target.id === 'xDetDlgDelBu' || event.target.closest('#xDetDlgDelBu')) {
+    let target = event.target
+    if (target.tagName.toLowerCase() !== 'button') target = target.closest('#xDetDlgDelBu')
+    // 取得含有data-eventid屬性的父元素
+    const parentTarget = target.closest('[data-eventid]')
+    const targerEventId = parentTarget.dataset.eventid
+    const reqDeleteDate = JSON.stringify({
+      result: {
+        calendar_event_id: targerEventId
+      }
+    })
+    console.log(reqDeleteDate)
+    // 發送請求刪除該event id 的資料
+    axios.post(GAS_DATE_DELETE_API, reqDeleteDate)
+      .then(res => console.log(res.data))
   }
 }

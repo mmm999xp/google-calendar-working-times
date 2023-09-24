@@ -5,67 +5,89 @@ const GAS_DATE_PUT_API = 'https://script.google.com/macros/s/AKfycbyrTmcBtNK4AJJ
 let eventId = ''
 let startDate = ''
 let endDate = ''
+let eventHandler = false
 // 監聽日曆活動的移動事件
-
-
 
 window.addEventListener('mousedown', (downEvent) => {
   // 後續事件，確定點擊到日曆活動的button，才執行後續事件
   if (downEvent.target.classList.contains('g3dbUc') &&
     downEvent.target.classList.contains('jKgTF') &&
     downEvent.target.classList.contains('QGRmIf')) {
-    // 取得event id
-    console.log(downEvent.target)
-    eventId = downEvent.target.parentElement.dataset.eventid
-    startDate = textToDate(downEvent.target.lastElementChild.textContent)
     setTimeout(() => {
-      console.log('已確定進到setTimeout')
+      const overlay = document.querySelector('#overlay')
       const currentURL = window.location.href
-      console.log(currentURL)
+      if (currentURL.includes('eventedit')) overlay.style.display = 'none'
       if (currentURL.includes('eventedit')) return
-      window.addEventListener('pointerup', pointerUpEvent)
+      // 取得event id
+      console.log(downEvent.target)
+      eventId = downEvent.target.parentElement.dataset.eventid
+      startDate = textToDate(downEvent.target.lastElementChild.textContent)
+      eventHandler = true
+      console.log('已確定進到setTimeout')
+      console.log(eventHandler)
+      // const currentURL = window.location.href
+      // if (currentURL.includes('eventedit')) return
     }, 200)
   }
 })
 
+window.addEventListener('pointerup', pointerUpEvent)
+
 function pointerUpEvent () {
-  console.log('已確定進到pointerUpEvent')
-  // 顯示遮罩
   const overlay = document.querySelector('#overlay')
-  overlay.style.display = 'block'
   const currentURL = window.location.href
   if (currentURL.includes('eventedit')) overlay.style.display = 'none'
-  // 移除當前監聽器
-  window.removeEventListener('pointerup', pointerUpEvent)
-  setTimeout(() => { // 等待0.3秒，確認dom操作完畢後才執行
-    const endEvent = document.querySelector(`[data-eventid="${eventId}"]`)
-    if (!endEvent) return
-    endDate = textToDate(endEvent.firstElementChild.lastElementChild.textContent)
-    // 當開始與結束日期不相同時，才需要發送請求變更google sheet日期資料
-    if (startDate !== endDate) {
-      if (endDate === '錯誤的日期格式') return
-      const reqPutDate = JSON.stringify({
-        result: {
-          calendar_event_id: eventId,
-          startDate,
-          endDate
-        }
-      })
-      console.log(reqPutDate)
-      axios.post(GAS_DATE_PUT_API, reqPutDate)
-        .then(res => {
-          console.log(res.data.status)
-          // 隱藏遮罩
-          overlay.style.display = 'none'
+  if (currentURL.includes('eventedit')) return
+  if (eventHandler) {
+    eventHandler = false
+    console.log('已確定進到pointerUpEvent')
+    // 顯示遮罩
+    overlay.style.display = 'block'
+
+    setTimeout(() => { // 等待0.5秒，確認dom操作完畢後才執行
+      const endEvent = document.querySelector(`[data-eventid="${eventId}"]`)
+      if (!endEvent) return
+      endDate = textToDate(endEvent.firstElementChild.lastElementChild.textContent)
+
+      console.log(startDate)
+      console.log(endDate)
+      // 當開始與結束日期不相同時，才需要發送請求變更google sheet日期資料
+      if (startDate !== endDate) {
+        if (endDate === '錯誤的日期格式') return
+        const reqPutDate = JSON.stringify({
+          result: {
+            calendar_event_id: eventId,
+            startDate,
+            endDate
+          }
         })
-    } else {
-      // 隱藏遮罩
-      overlay.style.display = 'none'
-    }
-  }, 400)
+        console.log(reqPutDate)
+        axios.post(GAS_DATE_PUT_API, reqPutDate)
+          .then(res => {
+            console.log(res.data.status)
+            // 隱藏遮罩
+            // eventHandler = false
+            overlay.style.display = 'none'
+            // 移除當前監聽器
+            // window.removeEventListener('pointerup', pointerUpEvent)
+          })
+      } else {
+        // 隱藏遮罩
+        // eventHandler = false
+        overlay.style.display = 'none'
+        // 移除當前監聽器
+        // window.removeEventListener('pointerup', pointerUpEvent)
+      }
+    }, 500)
+  }
 }
 const calendarHTML = document.querySelector('.tEhMVd')
-calendarHTML.appendChild(htmlToElement('<div id="overlay"></div>'))
+calendarHTML.appendChild(htmlToElement('<div id="overlay" ></div>'))
+document.querySelector('#overlay').addEventListener('click', function () {
+  overlay.style.display = 'none'
+})
+
+
 calendarHTML.appendChild(htmlToElement(`
 
 <div class=" container card border-black  bg-body-secondary p-2 d-none" id="custom-container">
@@ -229,7 +251,7 @@ calendarHTML.appendChild(htmlToElement(`
 
 
 `))
-/* global getDateFromUrl showDateDataByEventId getCalendarId textToDate axios */
+/* global getDateFromUrl showDateDataByEventId getCalendarId textToDate axios overlay */
 window.addEventListener('popstate', function (event) {
   // 重置頁面設定
   document.querySelector('.work_form').reset()
@@ -246,7 +268,7 @@ window.addEventListener('popstate', function (event) {
       container.classList.remove('d-none')
       if (currentURL.includes('eventedit?')) {
         const date = getDateFromUrl(currentURL)
-        
+
         document.querySelector('#date_input').value = date
         document.querySelector('.data-handler').innerText = '複製活動'
         document.querySelector('.data-handler').disabled = true
@@ -280,5 +302,5 @@ function htmlToElement (html) {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     // 在這裡添加事件監聽器
-  }, 100);
-});
+  }, 100)
+})
