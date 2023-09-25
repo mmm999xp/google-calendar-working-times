@@ -60,7 +60,7 @@ input[type=number]::-webkit-outer-spin-button {
 
 .current_working_times {
   background-color: rgb(116, 194, 92);
-  color: white;
+  /* color: white; */
   /*     padding: 1%; */
   text-align: right;
   font-size: 18px;
@@ -71,9 +71,14 @@ input[type=number]::-webkit-outer-spin-button {
 .bar {
   width: 70%;
 }
-
+.line1 {
+  background-color: rgb(159, 198, 231);
+}
+.line2 {
+  background-color: rgb(123, 209, 72);
+}
 .line3 {
-  background-color: rgb(170, 188, 100);
+  background-color: rgb(246, 145, 178);
 }
 /* .barContent{
   text-align: center;

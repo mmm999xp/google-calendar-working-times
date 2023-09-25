@@ -3,7 +3,7 @@ const GAS_DATE_GET_API = 'https://script.google.com/macros/s/AKfycbwmc0l4wZ1cBg-
 const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycby4qDjmoOifA2wMC-4Lq3GsPyrfVWhTgJIgYRxdb__mQxQRqsnK0hria1Ro3CtRDuUW/exec'
 const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbwhqIBXMAuoDKujXC8DNmLvXvvdqLNRqSSxJsgo-5xIs43-Y1xp13PsvO-Qh-rPfXLS/exec'
 const GAS_DATE_GET_BY_ID_API = 'https://script.google.com/macros/s/AKfycbydh-BmMMG_8K-HBuMnQgy93Z1Go2aWm-Hd6wSK2EQeWwC5sRcPLP6anYGxPDt-_p8QiQ/exec'
-const GAS_CALENDAR_POST_API = 'https://script.google.com/macros/s/AKfycbwZduyF-_oxlfDRIjp00BLZbhX93hl1uXwdc8xjqfCeMJ-ZI4zaf3vpe70GBeB8GfFTkQ/exec'
+const GAS_CALENDAR_POST_API = 'https://script.google.com/macros/s/AKfycby8bzIEWt0Vjou4_R6riPPMsJ4lMA8-WNssEngICtWSxsEIMPyKfAi53YjxiV-mm7ywyA/exec'
 const GAS_DATE_DELETE_API = 'https://script.google.com/macros/s/AKfycbyCWKMC8QcVuvc9NFSw1viKifjDp-xfYIuwFjtPFSw9ohhbb3K70mEbTsDLKzaP_g4b/exec'
 const GAS_WORKING_TIMES_GET_API = 'https://script.google.com/macros/s/AKfycbzsgl3N5AkcBiCin3Kh30OfdbIGcaZxFsIq8gkAmwsecaR-AT04Y2vwO_NO1J2TCyXXIw/exec'
 const submitButton = document.querySelector('#data_submit_button')
@@ -570,6 +570,10 @@ function workingTimeOverViewEvent () {
     document.querySelector('#overview_message').innerText = '請選擇日期'
     return
   }
+  workingTimeOverViewButton.innerText = '正在載入'
+  workingTimeOverViewButton.disabled = true
+  workingTimeOverViewButton.classList.remove('btn-primary')
+  workingTimeOverViewButton.classList.add('btn-secondary')
   getWorkingTimesFromDate(date, dayCounts)
 }
 /* ================================================================================================= */
@@ -707,5 +711,9 @@ function workingTimeOverView (data, date) {
 
   // 將 modalBody 添加到 modalContainer 中
   modalContainer.appendChild(modalBody)
+  workingTimeOverViewButton.innerText = '載入資料'
+  workingTimeOverViewButton.disabled = false
+  workingTimeOverViewButton.classList.add('btn-primary')
+  workingTimeOverViewButton.classList.remove('btn-secondary')
 }
 // workingTimeOverView()
