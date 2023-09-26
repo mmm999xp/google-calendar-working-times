@@ -60,8 +60,10 @@ submitButton.addEventListener('click', () => {
   /* global axios dayjs */
   axios.post(GAS_PROCESS_GET_API, data)
     .then(res => {
-      console.log(res.data)
-      if (res.data.length === 0) return alert('沒有任何工時資料')
+      if (res.data.length === 0) {
+        loader.style.display = 'none'
+        return alert('沒有任何工時資料')
+      }
       res.data.forEach(process => {
         const processTimes = costTimes(process.assembly, peopleCountsValue, workingHoursValue, productCountsValue)
         const tableHTML = `
@@ -145,7 +147,6 @@ function inputChangeEvent (event) {
   let newProcessTimes
   const target = event.target
   const allCostTimes = document.querySelectorAll('.cost_times') // 有可能透過API或是新增按鈕增加table欄位，因此必須重新抓取節點
-  // console.log(target)
   if (target.classList.contains('process_times_input') || target === peopleCounts || target === workingHours || target === productCounts) {
     allCostTimes.forEach(item => {
       // 如果是table裡面的平均工時遭到改變，取得新的值
@@ -154,10 +155,6 @@ function inputChangeEvent (event) {
       const workingHoursValue = workingHours.value || 0
       const peopleCountsValue = peopleCounts.value || 0
       const productCountsValue = productCounts.value || 0
-      // console.log('newProcessTimes', newProcessTimes)
-      // console.log('workingHoursValue', workingHoursValue)
-      // console.log('peopleCountsValue', peopleCountsValue)
-      // console.log('productCountsValue', productCountsValue)
       // 呼叫costTimes 重新計算工時
       const newCostTimes = costTimes(newProcessTimes, peopleCountsValue, workingHoursValue, productCountsValue)
       item.innerText = newCostTimes
@@ -362,8 +359,6 @@ function saveData (event) {
 
   reqDateDatas = JSON.stringify({ result: reqDateDatas })
 
-  // console.log(inputArray)
-  // console.log(reqDateDatas)
   axios.post(GAS_CALENDAR_POST_API, reqDateDatas)
     .then(res => {
       // 先將json轉回js物件
@@ -377,8 +372,6 @@ function saveData (event) {
         const result = res.data.events.find(event => event.date === reqPrecessDatas[i].date).calendarEventId
         reqPrecessDatas[i].calendar_event_id = result
       }
-      console.log(reqDateDatas)
-      console.log(reqPrecessDatas)
       // 再次轉化回json，發送請求新增資料到google sheets
       reqDateDatas = JSON.stringify({ result: reqDateDatas })
       reqPrecessDatas = JSON.stringify({ result: reqPrecessDatas })
@@ -414,7 +407,6 @@ function showDateData (date, workLink) {
     date: dayjs(date).format('YYYY-MM-DD'),
     belong_line: workLink
   })
-  console.log(reqDateDatas)
   // 發送AJAX請求要求數據
   axios.post(GAS_DATE_GET_API, reqDateDatas)
     .then(res => {
@@ -435,35 +427,45 @@ function showDateDataByEventId (eventId) {
   // 發送AJAX請求要求數據
   axios.post(GAS_DATE_GET_BY_ID_API, reqDateDatas)
     .then(res => {
-      date.value = res.data.date || ''
-      productNumber.value = res.data.product_number || ''
-      productColor.value = res.data.product_color || ''
-      workingHours.value = res.data.working_hours || ''
-      peopleCounts.value = res.data.people_counts || ''
-      productCounts.value = res.data.product_counts || ''
-      const allLineOption = line.getElementsByTagName('option')
-      for (let i = 0; i < allLineOption.length; i++) {
-        if (allLineOption[i].value === res.data.belong_line) {
-          allLineOption[i].selected = true
-          break
+      if (res.data) {
+        date.value = res.data.date || ''
+        productNumber.value = res.data.product_number || ''
+        productColor.value = res.data.product_color || ''
+        workingHours.value = res.data.working_hours || 8
+        peopleCounts.value = res.data.people_counts || 4
+        productCounts.value = res.data.product_counts || ''
+        const allLineOption = line.getElementsByTagName('option')
+        for (let i = 0; i < allLineOption.length; i++) {
+          if (allLineOption[i].value === res.data.belong_line) {
+            allLineOption[i].selected = true
+            break
+          }
         }
-      }
-      const allColorOption = productColor.getElementsByTagName('option')
-      for (let i = 0; i < allColorOption.length; i++) {
-        if (allColorOption[i].value === res.data.product_counts) {
-          allColorOption[i].selected = true
-          break
+        const allColorOption = productColor.getElementsByTagName('option')
+        for (let i = 0; i < allColorOption.length; i++) {
+          if (allColorOption[i].value === res.data.product_counts) {
+            allColorOption[i].selected = true
+            break
+          }
         }
-      }
-      // 更新工時使用量時間條
-      updateProgressbar(workingHours.value, res.data.current_working_times)
+        // 更新工時使用量時間條
+        updateProgressbar(workingHours.value, res.data.current_working_times)
 
-      dataHandlerButton.innerText = '已保存'
-      dataHandlerButton.disabled = true
-      dataHandlerButton.classList.remove('btn-primary')
-      dataHandlerButton.classList.add('btn-secondary')
-      // 隱藏遮罩，讓使用者可輸入
-      loader.style.display = 'none'
+        dataHandlerButton.innerText = '已保存'
+        dataHandlerButton.disabled = true
+        dataHandlerButton.classList.remove('btn-primary')
+        dataHandlerButton.classList.add('btn-secondary')
+        // 隱藏遮罩，讓使用者可輸入
+        loader.style.display = 'none'
+      } else {
+        date.value = ''
+        dataHandlerButton.innerText = '原有活動無法新增'
+        dataHandlerButton.disabled = true
+        dataHandlerButton.classList.remove('btn-primary')
+        dataHandlerButton.classList.add('btn-secondary')
+        // 隱藏遮罩，讓使用者可輸入
+        loader.style.display = 'none'
+      }
     })
     .catch(error => console.log(error))
 }
@@ -546,13 +548,13 @@ function deleteEvent (event) {
         calendar_event_id: targerEventId
       }
     })
-    console.log(reqDeleteDate)
     // 發送請求刪除該event id 的資料
     axios.post(GAS_DATE_DELETE_API, reqDeleteDate)
       .then(res => {
-        console.log(res.data)
+        // 刪除成功
         document.querySelector('#overlay').style.display = 'none'
       })
+      .catch(error => console.log(error))
   }
 }
 function workingTimeOverViewEvent () {
@@ -565,7 +567,7 @@ function workingTimeOverViewEvent () {
     document.querySelector('#overview_message').innerText = '請輸入小於100的整數'
     return
   }
-  const date = document.querySelector('#date1').value
+  const date = document.querySelector('#date_Overview_input').value
   if (date === '') {
     document.querySelector('#overview_message').innerText = '請選擇日期'
     return
@@ -601,12 +603,11 @@ function getWorkingTimesFromDate (date, dayCounts) {
 }
 
 function workingTimeOverView (data, date) {
-  console.log(data)
-  // 假設您希望生成的欄位數量
+  // 希望生成的欄位數量
   const totalColumns = document.querySelector('#dayCounts').value
 
-  // 假設每行的欄位數量
-  const columnsPerRow = 5
+  // 每行的欄位數量
+  const columnsPerRow = 7
 
   // 取得 modal 容器元素
   const modalContainer = document.getElementById('modalContainer')
@@ -718,4 +719,3 @@ function workingTimeOverView (data, date) {
   workingTimeOverViewButton.classList.add('btn-primary')
   workingTimeOverViewButton.classList.remove('btn-secondary')
 }
-// workingTimeOverView()
