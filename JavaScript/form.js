@@ -587,10 +587,10 @@ function getWorkingTimesFromDate (date, dayCounts) {
   // 開始迴圈，直到找到指定個符合條件的日期
   while (resultArray.length < dayCounts) {
     // 檢查當前日期是否是周日（0）
-    if (startDate.day() !== 0) {
-      // 如果不是周末，將該日期添加到結果陣列
-      resultArray.push(startDate.format('YYYY-MM-DD'))
-    }
+    // if (startDate.day() !== 0) {
+    // 如果不是周末，將該日期添加到結果陣列
+    resultArray.push(startDate.format('YYYY-MM-DD'))
+    // }
     // 將日期往後移一天
     startDate = startDate.add(1, 'day')
   }
@@ -647,7 +647,9 @@ function workingTimeOverView (data, date) {
     const column = document.createElement('div')
     column.classList.add('col-md-2', 'border', 'border-dark', 'col-content')
     const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`
-    column.textContent = formattedDate // 欄位內容
+    const daysOfWeek = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+    const dayOfWeek = dayjs(formattedDate).day()
+    column.textContent = formattedDate + '  ' + daysOfWeek[dayOfWeek] // 欄位內容
 
     // 檢查數據中是否有匹配的日期
     const matchingData = dateDataMap[formattedDate]

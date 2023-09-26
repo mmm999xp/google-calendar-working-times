@@ -253,7 +253,6 @@ calendarHTML.appendChild(htmlToElement(`
   <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal" style="margin-top: 1%;" >
     工時資料總覽
   </button>
-  
   <!-- Modal -->
   <div class="modal fade modal-xl" id="exampleModal"  tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
