@@ -1,11 +1,6 @@
-const GAS_PROCESS_GET_API = 'https://script.google.com/macros/s/AKfycbzoZpcFqCb9wVzRhQFgM_L3O2Sava4jqfbe7tdjPrr_tkRDxeCowYpHy9HzxKVggaBe/exec'
-const GAS_DATE_GET_API = 'https://script.google.com/macros/s/AKfycbwmc0l4wZ1cBg-K3P8QWFNyzlUKQXXjXQGjC5mSP0zES7sx0deWmRlNrF9jpVHuvqpr3Q/exec'
-const GAS_DATE_POST_API = 'https://script.google.com/macros/s/AKfycby4qDjmoOifA2wMC-4Lq3GsPyrfVWhTgJIgYRxdb__mQxQRqsnK0hria1Ro3CtRDuUW/exec'
-const GAS_PROCESS_POST_API = 'https://script.google.com/macros/s/AKfycbwhqIBXMAuoDKujXC8DNmLvXvvdqLNRqSSxJsgo-5xIs43-Y1xp13PsvO-Qh-rPfXLS/exec'
-const GAS_DATE_GET_BY_ID_API = 'https://script.google.com/macros/s/AKfycbydh-BmMMG_8K-HBuMnQgy93Z1Go2aWm-Hd6wSK2EQeWwC5sRcPLP6anYGxPDt-_p8QiQ/exec'
-const GAS_CALENDAR_POST_API = 'https://script.google.com/macros/s/AKfycby8bzIEWt0Vjou4_R6riPPMsJ4lMA8-WNssEngICtWSxsEIMPyKfAi53YjxiV-mm7ywyA/exec'
-const GAS_DATE_DELETE_API = 'https://script.google.com/macros/s/AKfycbyCWKMC8QcVuvc9NFSw1viKifjDp-xfYIuwFjtPFSw9ohhbb3K70mEbTsDLKzaP_g4b/exec'
-const GAS_WORKING_TIMES_GET_API = 'https://script.google.com/macros/s/AKfycbzsgl3N5AkcBiCin3Kh30OfdbIGcaZxFsIq8gkAmwsecaR-AT04Y2vwO_NO1J2TCyXXIw/exec'
+/* global GAS_PROCESS_GET_API GAS_DATE_GET_API GAS_DATE_POST_API  GAS_DATE_GET_BY_ID_API GAS_CALENDAR_POST_API GAS_DATE_DELETE_API GAS_WORKING_TIMES_GET_API   */
+/* global axios dayjs  */
+
 const submitButton = document.querySelector('#data_submit_button')
 const table = document.querySelector('.custom-table')
 const container = document.querySelector('.container')
@@ -57,7 +52,7 @@ submitButton.addEventListener('click', () => {
     people_counts: peopleCountsValue,
     product_counts: productCountsValue
   })
-  /* global axios dayjs */
+
   axios.post(GAS_PROCESS_GET_API, data)
     .then(res => {
       if (res.data.length === 0) {
