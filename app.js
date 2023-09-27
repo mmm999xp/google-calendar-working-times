@@ -1,8 +1,9 @@
+/* global GAS_DATE_PUT_API   */
+/* global getDateFromUrl showDateDataByEventId getCalendarId textToDate axios overlay  */
 /* =========== CONSTANTS =========== */
 const CANCEL_BUTTON_SELECTOR = '.TbpVhb'
 const GOOGLE_SAVE_BUTTON_SELECTOR = '#xSaveBu'
 
-const GAS_DATE_PUT_API = 'https://script.google.com/macros/s/AKfycbyrTmcBtNK4AJJBLsD8EZjWzXEWsUOY_mwqrknBJSSi6R0GPf6zc939WwceDw43SfYv/exec'
 /* ================================= */
 let eventId = ''
 let startDate = ''
@@ -266,7 +267,7 @@ calendarHTML.appendChild(htmlToElement(`
 
 
 `))
-/* global getDateFromUrl showDateDataByEventId getCalendarId textToDate axios overlay */
+
 window.addEventListener('popstate', function (event) {
   // 重置頁面設定
   document.querySelector('.work_form').reset()
