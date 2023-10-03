@@ -54,12 +54,17 @@
 ## 版本說明
  V1.1.1加強了安全性問題，安裝方法有以下的變動：
 1. 下載zip到解壓縮之後
-2. 將JavaScript資料夾底下的api.js.example底下的內容替換成您的實際API_URL，且將此檔案重新命名為api.js
-3. 按照以前的方式重新載入
+2. 從雲端硬碟中的google-calendar-working-times 資料夾中下載api.js檔案
+3. 將其複製到專案的資料夾底下的JavaScript資料夾底下
+4. 按照以前的方式重新載入
+
 ## 已知問題
 * Google日曆頁面些微跑版
 * 如果把活動的當前生產線調整為其他生產線，Google Sheet不會自動更新的問題
+
 ## Update Log
+* V1.1.2
+   * 改善了使用者體驗
 * V1.1.1
    * 加強了安全性
 
