@@ -383,6 +383,13 @@ function saveData (event) {
       saveButton.classList.remove('btn-secondary')
       document.querySelector('.btn-close').click()
       window.history.back()
+      setTimeout(() => {
+        // 確認有沒有彈出「是否捨棄尚未儲存的變更內容」窗口
+        if (document.querySelector('.VfPpkd-P5QLlc')) {
+          // 點擊捨棄
+          document.querySelector('[data-mdc-dialog-action="ok"]').click()
+        }
+      }, 200)
     })
     .catch(error => console.log(error))
 }
@@ -446,18 +453,19 @@ function showDateDataByEventId (eventId) {
         // 更新工時使用量時間條
         updateProgressbar(workingHours.value, res.data.current_working_times)
 
-        dataHandlerButton.innerText = '已保存'
-        dataHandlerButton.disabled = true
-        dataHandlerButton.classList.remove('btn-primary')
-        dataHandlerButton.classList.add('btn-secondary')
+        // dataHandlerButton.innerText = '已保存'
+        // dataHandlerButton.disabled = true
+        // dataHandlerButton.classList.remove('btn-primary')
+        // dataHandlerButton.classList.add('btn-secondary')
         // 隱藏遮罩，讓使用者可輸入
         loader.style.display = 'none'
       } else {
-        date.value = ''
-        dataHandlerButton.innerText = '原有活動無法新增'
-        dataHandlerButton.disabled = true
-        dataHandlerButton.classList.remove('btn-primary')
-        dataHandlerButton.classList.add('btn-secondary')
+        const currentDate = textToDate(document.querySelector('#xStDaIn').value)
+        date.value = dayjs(currentDate).format('YYYY-MM-DD')
+        // dataHandlerButton.innerText = '原有活動無法新增'
+        // dataHandlerButton.disabled = true
+        // dataHandlerButton.classList.remove('btn-primary')
+        // dataHandlerButton.classList.add('btn-secondary')
         // 隱藏遮罩，讓使用者可輸入
         loader.style.display = 'none'
       }
