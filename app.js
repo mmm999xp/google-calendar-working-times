@@ -204,24 +204,33 @@ calendarHTML.appendChild(htmlToElement(`
   <!-- Modal -->
   <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="staticBackdropLabel">批量複製設定</h1>
+          <span id="modal_cost_message_current" class="fs-5" style="margin-left:650px;">已分配 10 小時 </span>
+          <span  class="fs-5" style="margin-left:10px;"> / </span>
+          <span id="modal_cost_message_total" class="fs-5" style="margin-left:10px;"> 需要 25 小時</span>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <div class="modal-body">
-          <!-- <label for="date" class="form-label">日期</label>
-          <input type="date" id="date" class="form-control  border-black" value="2023-09-27">
-          <label for="summary" class="form-label">標題</label>
-          <input type="text" id="summary" class="form-control  border-black" value="1.SHT-YIH001五彩*1000">
-          <label for="description" class="form-label">描述</label>
-          <input type="text" id="description" class="form-control  border-black" value="本體預計xx/xx回">
-          <hr> -->
+       <div class="modal-body">
+          <div class="modal-event">
+            <div class="row">
+              <!-- 左側 -->
+              <div class="col-md-6">
+                
+              </div>
+              <!-- 右側 -->
+              <div class="col-md-6">
+                
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
+          <button type="button" id="add_event" class="btn btn-primary" style="margin-right: 650px;">新增活動</button>
           <span id="modal_message">按下確認後，處理需要一段時間</span>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
           <button type="button" class="btn btn-primary save_button">確認複製</button>
@@ -248,8 +257,6 @@ calendarHTML.appendChild(htmlToElement(`
           <label for="date_Overview_input" class="modal-title" style="font-size:20px; margin: 0 0.5% 0  5% ;">選擇日期</label>
           <input type="date" class="form-control border border-dark" id="date_Overview_input"
             style="width:20%;margin-right: 1.5%;">
-          <span>---</span>
-          <input type="date" class="form-control border border-dark" style="width:20%;margin-left: 1.5%;" disabled>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div id="modalContainer" class="container modal-body">

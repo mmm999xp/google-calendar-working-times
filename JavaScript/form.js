@@ -156,6 +156,39 @@ function inputChangeEvent (event) {
       totalCostTimes.innerText = sumCostTimes(workingHoursValue)
     })
   }
+  // 如果是批量複製設定中的工時欄位有變動，更新已分配時間
+  if (target.classList.contains('timecost')) {
+    const allTimeCost = document.querySelectorAll('.timecost')
+    let totalTime = 0
+    allTimeCost.forEach(item => {
+      totalTime += Number(item.value)
+    })
+    document.querySelector('#modal_cost_message_current').textContent = `已分配 ${totalTime} 小時`
+    const match1 = document.querySelector('#modal_cost_message_current').textContent.match(/\d+/)
+    const match2 = document.querySelector('#modal_cost_message_total').textContent.match(/\d+/)
+    if (match1 && match2) {
+      const currentTime = Number(match1[0])
+      const needTime = Number(match2[0])
+      if (currentTime > needTime) {
+        document.querySelector('#modal_cost_message_current').style.color = 'blue'
+        document.querySelector('#modal_message').style.color = 'blue'
+        document.querySelector('#modal_message').innerText = '將造成工時浪費，請確認'
+        document.querySelector('#modal_message').style.fontSize = '17px'
+      }
+      if (currentTime < needTime) {
+        document.querySelector('#modal_cost_message_current').style.color = 'red'
+        document.querySelector('#modal_message').style.color = 'red'
+        document.querySelector('#modal_message').innerText = '將造成工時不足，請確認'
+        document.querySelector('#modal_message').style.fontSize = '17px'
+      }
+      if (currentTime === needTime) {
+        document.querySelector('#modal_cost_message_current').style.color = 'black'
+        document.querySelector('#modal_message').style.color = 'black'
+        document.querySelector('#modal_message').innerText = '按下確認後，處理需要一段時間'
+        document.querySelector('#modal_message').style.fontSize = '14px'
+      }
+    }
+  }
 }
 
 // 計算總耗時，每次此函式重新抓取CostTimes總節點，而不需要作為參數傳入，這是因為可能會因為透過API或是新增按鈕增加數個CostTime欄位
@@ -184,6 +217,7 @@ function sumCostTimes (workingHours) {
 }
 let reqDateDatas = []
 let reqPrecessDatas = []
+
 // 處理批量複製的資料
 function dataHandler () {
   reqDateDatas = [] // 初始化數據
@@ -204,14 +238,16 @@ function dataHandler () {
   const matches = totalCostTimesValue.match(/(\d+)天(\d+)小時/)
   let days = 0
   let hours = 0
-  // let totalHours = 0
+  let totalHours = 0
   if (matches) {
     days = Number(matches[1]) // 提取天數
     hours = Number(matches[2]) // 提取小時數
-    // totalHours = days * workingHoursValue + hours // 計算總耗時的小時數，方便後續計算
+    totalHours = days * workingHoursValue + hours // 計算總耗時的小時數，方便後續計算
+    document.querySelector('#modal_cost_message_total').textContent = `需要 ${totalHours} 小時`
+    document.querySelector('#modal_cost_message_current').textContent = `已分配 ${totalHours} 小時`
     if (hours !== 0) days = days + 1 // 如果小時數有數字，則無條件進位一天
   }
-  if (days === 0) return alert('總耗時天數合計為 0')
+  // if (days === 0) alert('總耗時天數合計為 0')
 
   // 準備資料，針對days迴圈，有幾天就增加幾筆的資料到google sheets，不包含最後一天
   for (let i = 0; i < days - 1; i++) {
@@ -244,7 +280,7 @@ function dataHandler () {
   /* =======================設定批量複製事件，以整理成方便發送新增日曆事件的JSON========================= */
   /* ================================================================================================= */
 
-  document.querySelector('.modal-body').innerHTML = '' // 初始化
+  document.querySelector('.modal-event').innerHTML = '' // 初始化
   const client = document.querySelector('.client').value
   let textNumber = 0
   switch (lineValue) {
@@ -266,16 +302,43 @@ function dataHandler () {
     const text = textNumber + client + '-' + reqDateDatas[i].product_number + reqDateDatas[i].product_color + '*' + reqDateDatas[i].product_counts
     const descriotion = document.querySelector('.T2Ybvb') ? document.querySelector('.T2Ybvb').innerText : ''
     const rowData = `
+      <div class="row">
+        <div class="col-md-6">
           <label for="date${i}" class="form-label">日期</label>
           <input type="date" id="date${i}" class="form-control  border-black" value="${reqDateDatas[i].date}">
           <label for="summary${i}" class="form-label">標題</label>
           <input type="text" id="summary${i}" class="form-control  border-black" value="${text}">
+          <div class="row">
+            <div class="col-md-8">
+              <label for="line${i}" class="form-label">生產線</label>
+              <select name="production_line" id="line${i}" class="form-select  border-black mb-3">
+                <option value="first_line" ${reqDateDatas[i].belong_line === 'first_line' ? 'selected' : ''}>一線</option>
+                <option value="second_line" ${reqDateDatas[i].belong_line === 'second_line' ? 'selected' : ''}>二線</option>
+                <option value="third_line" ${reqDateDatas[i].belong_line === 'third_line' ? 'selected' : ''}>三線</option>
+                <option value="riveting_line" ${reqDateDatas[i].belong_line === 'riveting_line' ? 'selected' : ''}>中空/鉚合</option>
+                <option value="middle_pole_line" ${reqDateDatas[i].belong_line === 'middle_pole_line' ? 'selected' : ''}>中桿</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="time" class="form-label">分配工時</label>
+              <input type="number" class="form-control border-black timecost" id="time${i}" min="0" max="12"
+              step="0" value="${reqDateDatas[i].current_working_times}" >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 d-flex flex-column">
           <label for="description${i}" class="form-label">描述</label>
-          <input type="text" id="description${i}" class="form-control  border-black" value="${descriotion}">
-          <hr>
+          <textarea id="description${i}" class="form-control border-black flex-grow-1">${descriotion}</textarea>
+        </div>
+      </div>
+      <hr>
     `
-    document.querySelector('.modal-body').innerHTML += rowData
+    document.querySelector('.modal-event').innerHTML += rowData
   }
+
+  // 如果新增活動按鈕被按下
+  document.querySelector('#add_event').removeEventListener('click', addNewEvent)
+  document.querySelector('#add_event').addEventListener('click', addNewEvent)
 
   /* ================================================================================================= */
   /* ============處理製程資料，為了發送請求到GAS的API，儲存資料到google sheets 製程關聯的工作============== */
@@ -336,11 +399,15 @@ function saveData (event) {
     const dateInput = document.querySelector(`#date${i}`).value
     const summaryInput = document.querySelector(`#summary${i}`).value
     const descriptionInput = document.querySelector(`#description${i}`).value
+    const lineInput = document.querySelector(`#line${i}`).value
+    const timeInput = document.querySelector(`#time${i}`).value
 
     const dataObject = {
       date: dateInput,
       summary: summaryInput,
-      description: descriptionInput
+      description: descriptionInput,
+      belong_line: lineInput,
+      current_working_times: timeInput.toString()
     }
 
     inputArray.push(dataObject)
@@ -350,6 +417,8 @@ function saveData (event) {
     reqDateDatas[i].date = inputArray[i].date
     reqDateDatas[i].summary = inputArray[i].summary
     reqDateDatas[i].description = inputArray[i].description
+    reqDateDatas[i].belong_line = inputArray[i].belong_line
+    reqDateDatas[i].current_working_times = inputArray[i].current_working_times
   }
 
   reqDateDatas = JSON.stringify({ result: reqDateDatas })
@@ -654,7 +723,10 @@ function workingTimeOverView (data, date) {
     const daysOfWeek = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
     const dayOfWeek = dayjs(formattedDate).day()
     column.textContent = formattedDate + '  ' + daysOfWeek[dayOfWeek] // 欄位內容
-
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      column.style.color = 'red'
+      column.style.fontWeight = 'bold'
+    }
     // 檢查數據中是否有匹配的日期
     const matchingData = dateDataMap[formattedDate]
 
@@ -721,4 +793,48 @@ function workingTimeOverView (data, date) {
   workingTimeOverViewButton.disabled = false
   workingTimeOverViewButton.classList.add('btn-primary')
   workingTimeOverViewButton.classList.remove('btn-secondary')
+}
+function addNewEvent () {
+  const rowData = `
+      <div class="row">
+        <div class="col-md-6">
+          <label for="date${reqDateDatas.length}" class="form-label">日期</label>
+          <input type="date" id="date${reqDateDatas.length}" class="form-control  border-black" value="${reqDateDatas[0].date}">
+          <label for="summary${reqDateDatas.length}" class="form-label">標題</label>
+          <input type="text" id="summary${reqDateDatas.length}" class="form-control  border-black" value="${document.querySelector('#summary0').value}">
+          <div class="row">
+            <div class="col-md-8">
+              <label for="production_line" class="form-label">生產線</label>
+              <select name="production_line" id="line${reqDateDatas.length}" class="form-select  border-black mb-3">
+                <option value="first_line" ${reqDateDatas[0].belong_line === 'first_line' ? 'selected' : ''}>一線</option>
+                <option value="second_line" ${reqDateDatas[0].belong_line === 'second_line' ? 'selected' : ''}>二線</option>
+                <option value="third_line" ${reqDateDatas[0].belong_line === 'third_line' ? 'selected' : ''}>三線</option>
+                <option value="riveting_line" ${reqDateDatas[0].belong_line === 'riveting_line' ? 'selected' : ''}>中空/鉚合</option>
+                <option value="middle_pole_line" ${reqDateDatas[0].belong_line === 'middle_pole_line' ? 'selected' : ''}>中桿</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="time" class="form-label">分配工時</label>
+              <input type="number" class="form-control border-black timecost" id="time${reqDateDatas.length}" min="0" max="12"
+              step="0" value="0" >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 d-flex flex-column">
+          <label for="description${reqDateDatas.length}" class="form-label">描述</label>
+          <textarea id="description${reqDateDatas.length}" class="form-control border-black flex-grow-1"></textarea>
+        </div>
+      </div>
+      <hr>
+    `
+  document.querySelector('.modal-event').innerHTML += rowData
+  // 新增初始值
+  reqDateDatas.push({
+    date: '',
+    working_hours: reqDateDatas[0].working_hours,
+    people_counts: reqDateDatas[0].people_counts,
+    product_counts: reqDateDatas[0].product_counts,
+    product_number: reqDateDatas[0].product_number,
+    product_color: reqDateDatas[0].product_color
+  })
 }
