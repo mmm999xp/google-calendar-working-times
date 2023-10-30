@@ -248,7 +248,11 @@ function dataHandler () {
     if (hours !== 0) days = days + 1 // 如果小時數有數字，則無條件進位一天
   }
   // if (days === 0) alert('總耗時天數合計為 0')
-
+  if (days >= 100) {
+    reqDateDatas = [] // 初始化數據
+    reqPrecessDatas = [] // 初始化數據
+    return alert('總耗時天數超過 100 天，無法新增')
+  }
   // 準備資料，針對days迴圈，有幾天就增加幾筆的資料到google sheets，不包含最後一天
   for (let i = 0; i < days - 1; i++) {
     reqDateDatas.push({

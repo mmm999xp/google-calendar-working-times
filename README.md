@@ -5,6 +5,7 @@
 
 ![MyImage](https://github.com/mmm999xp/google-calendar-working-times/blob/master/UI.jpg)
 ![MyImage](https://github.com/mmm999xp/google-calendar-working-times/blob/master/calendar%20UI.jpg)
+![MyImage](https://github.com/mmm999xp/google-calendar-working-times/blob/master/批量複製UI.jpg)
 
 ## 專案功能
 * 工時計算
@@ -49,7 +50,6 @@
  
 * 如成功看到上圖的UI，表示安裝成功，可以開始使用本專案的功能了!
 
-## 使用說明
 
 ## 版本說明
  V1.1.1加強了安全性問題，安裝方法有以下的變動：
@@ -63,6 +63,8 @@
 * 如果把活動的當前生產線調整為其他生產線，Google Sheet不會自動更新的問題
 
 ## Update Log
+* V1.1.3
+   * 改善了使用者體驗，改變批量複製UI，可以選擇生產線，且可以自行分配工時
 * V1.1.2
    * 改善了使用者體驗
 * V1.1.1
