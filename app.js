@@ -109,13 +109,20 @@ calendarHTML.appendChild(htmlToElement(`
           <!-- 顏色輸入欄位 -->
           <div class="product_color_block">
             <label for="product_color_input" class="form-label">顏色</label>
-            <select name="product_color_input" id="product_color_input" class="form-select border-black mb-3">
-              <option value="無">無</option>
+            <input class="form-control border-black mb-3" list="datalistOptions" id="product_color_input">
+              <datalist id="datalistOptions">
+              <option value="鋁製">鋁製</option>
               <option value="五彩">五彩</option>
               <option value="鍍鋅">鍍鋅</option>
               <option value="鍍鉻">鍍鉻</option>
-              <option value="電著">電著</option>
-            </select>
+              <option value="電著黑">電著黑</option>
+              <option value="鍍鎳">鍍鎳</option>
+              <option value="烤漆">烤漆</option>
+              <option value="振金">振金</option>
+              <option value="粗胚">粗胚</option>
+              <option value="三價五彩">三價五彩</option>
+              <option value="無">無</option>
+            </datalist>
           </div>
           <!-- 作業人數輸入欄位 -->
           <div class="people_counts_block">
