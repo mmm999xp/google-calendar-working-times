@@ -1,5 +1,5 @@
 /* global GAS_DATE_PUT_API   */
-/* global getDateFromUrl showDateDataByEventId getCalendarId textToDate axios overlay  */
+/* global getDateFromUrl showDateDataByEventId getCalendarId textToDate axios overlay showPeopleValue showHoursValue  */
 /* =========== CONSTANTS =========== */
 const CANCEL_BUTTON_SELECTOR = '.TbpVhb'
 const GOOGLE_SAVE_BUTTON_SELECTOR = '#xSaveBu'
@@ -97,8 +97,13 @@ calendarHTML.appendChild(htmlToElement(`
               <option value="first_line">一線</option>
               <option value="second_line">二線</option>
               <option value="third_line">三線</option>
-              <option value="riveting_line">中空/鉚合</option>
-              <option value="middle_pole_line">中桿</option>
+              <option value="riveting_line">中空</option>
+              <option value="rope_grab_riveing_line">鉚合(抓繩器)</option>
+              <option value="hook_riveing">鉚合(鉤類)</option>
+              <option value="c_buckle_riveing">鉚合(C扣)</option>
+              <option value="customization_riveing">鉚合(客製)</option>
+              <option value="other_riveing">鉚合(其他)</option>
+              <option value="foreign_workers_line">外勞工作</option>
             </select>
           </div>
           <!-- 名稱輸入欄位 -->
@@ -312,6 +317,8 @@ window.addEventListener('popstate', function (event) {
         document.querySelector('.data-handler').disabled = true
         document.querySelector('.data-handler').classList.add('btn-primary')
         document.querySelector('.data-handler').classList.remove('btn-secondary')
+        showPeopleValue()
+        showHoursValue()
       } else {
         showDateDataByEventId(getCalendarId(currentURL))
       }

@@ -319,8 +319,13 @@ function dataHandler () {
                 <option value="first_line" ${reqDateDatas[i].belong_line === 'first_line' ? 'selected' : ''}>一線</option>
                 <option value="second_line" ${reqDateDatas[i].belong_line === 'second_line' ? 'selected' : ''}>二線</option>
                 <option value="third_line" ${reqDateDatas[i].belong_line === 'third_line' ? 'selected' : ''}>三線</option>
-                <option value="riveting_line" ${reqDateDatas[i].belong_line === 'riveting_line' ? 'selected' : ''}>中空/鉚合</option>
-                <option value="middle_pole_line" ${reqDateDatas[i].belong_line === 'middle_pole_line' ? 'selected' : ''}>中桿</option>
+                <option value="riveting_line" ${reqDateDatas[i].belong_line === 'riveting_line' ? 'selected' : ''}>中空</option>
+                <option value="rope_grab_riveing_line" ${reqDateDatas[i].belong_line === 'rope_grab_riveing_line' ? 'selected' : ''}>鉚合(抓繩器)</option>
+                <option value="hook_riveing" ${reqDateDatas[i].belong_line === 'hook_riveing' ? 'selected' : ''}>鉚合(鉤類)</option>
+                <option value="c_buckle_riveing" ${reqDateDatas[i].belong_line === 'c_buckle_riveing' ? 'selected' : ''}>鉚合(C扣)</option>
+                <option value="customization_riveing" ${reqDateDatas[i].belong_line === 'customization_riveing' ? 'selected' : ''}>鉚合(客製)</option>
+                <option value="other_riveing" ${reqDateDatas[i].belong_line === 'other_riveing' ? 'selected' : ''}>鉚合(其他)</option>
+                <option value="foreign_workers_line" ${reqDateDatas[i].belong_line === 'foreign_workers_line' ? 'selected' : ''}>外勞工作</option>
               </select>
             </div>
             <div class="col-md-4">
@@ -508,6 +513,8 @@ function showDateDataByEventId (eventId) {
         productColor.value = res.data.product_color || ''
         workingHours.value = res.data.working_hours || 8
         peopleCounts.value = res.data.people_counts || 4
+        showPeopleValue()
+        showHoursValue()
         productCounts.value = res.data.product_counts || ''
         const allLineOption = line.getElementsByTagName('option')
         for (let i = 0; i < allLineOption.length; i++) {
@@ -813,8 +820,13 @@ function addNewEvent () {
                 <option value="first_line" ${reqDateDatas[0].belong_line === 'first_line' ? 'selected' : ''}>一線</option>
                 <option value="second_line" ${reqDateDatas[0].belong_line === 'second_line' ? 'selected' : ''}>二線</option>
                 <option value="third_line" ${reqDateDatas[0].belong_line === 'third_line' ? 'selected' : ''}>三線</option>
-                <option value="riveting_line" ${reqDateDatas[0].belong_line === 'riveting_line' ? 'selected' : ''}>中空/鉚合</option>
-                <option value="middle_pole_line" ${reqDateDatas[0].belong_line === 'middle_pole_line' ? 'selected' : ''}>中桿</option>
+                <option value="riveting_line" ${reqDateDatas[0].belong_line === 'riveting_line' ? 'selected' : ''}>中空</option>
+                <option value="rope_grab_riveing_line" ${reqDateDatas[0].belong_line === 'rope_grab_riveing_line' ? 'selected' : ''}>鉚合(抓繩器)</option>
+                <option value="hook_riveing" ${reqDateDatas[0].belong_line === 'hook_riveing' ? 'selected' : ''}>鉚合(鉤類)</option>
+                <option value="c_buckle_riveing" ${reqDateDatas[0].belong_line === 'c_buckle_riveing' ? 'selected' : ''}>鉚合(C扣)</option>
+                <option value="customization_riveing" ${reqDateDatas[0].belong_line === 'customization_riveing' ? 'selected' : ''}>鉚合(客製)</option>
+                <option value="other_riveing" ${reqDateDatas[0].belong_line === 'other_riveing' ? 'selected' : ''}>鉚合(其他)</option>
+                <option value="foreign_workers_line" ${reqDateDatas[0].belong_line === 'foreign_workers_line' ? 'selected' : ''}>外勞工作</option>
               </select>
             </div>
             <div class="col-md-4">
