@@ -70,8 +70,8 @@ submitButton.addEventListener('click', () => {
           <td><span class="cost_times">${processTimes}</span></td>
         </tr>
        `
-
-        table.innerHTML += tableHTML
+        table.insertAdjacentHTML('beforeend', tableHTML)
+        // table.innerHTML += tableHTML
         totalCostTimes.innerText = sumCostTimes(workingHoursValue)
         // dataHandlerButton.classList.remove('d-none')
         if (window.location.href.includes('eventedit?')) {
@@ -126,8 +126,8 @@ function addAndDeleteProcess (event) {
           <td><span class="cost_times"></span></td>
         </tr>
        `
-
-    table.innerHTML += tableHTML
+    table.insertAdjacentHTML('beforeend', tableHTML)
+    // table.innerHTML += tableHTML
   }
   // 如果點擊到刪除按鈕，將table的一整行(table row)刪除，同時呼叫sumCostTimes更新數值
   if (target.classList.contains('delete_process')) {
@@ -342,7 +342,8 @@ function dataHandler () {
       </div>
       <hr>
     `
-    document.querySelector('.modal-event').innerHTML += rowData
+    // document.querySelector('.modal-event').innerHTML += rowData
+    document.querySelector('.modal-event').insertAdjacentHTML('beforeend', rowData)
   }
 
   // 如果新增活動按鈕被按下
@@ -843,7 +844,7 @@ function addNewEvent () {
       </div>
       <hr>
     `
-  document.querySelector('.modal-event').innerHTML += rowData
+  document.querySelector('.modal-event').insertAdjacentHTML('beforeend', rowData)
   // 新增初始值
   reqDateDatas.push({
     date: '',
