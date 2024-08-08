@@ -541,8 +541,12 @@ function showDateDataByEventId (eventId) {
         // 隱藏遮罩，讓使用者可輸入
         loader.style.display = 'none'
       } else {
-        const currentDate = textToDate(document.querySelector('#xStDaIn').value)
-        date.value = dayjs(currentDate).format('YYYY-MM-DD')
+        const currentDate = document.querySelector('#xStDaIn')
+        let currentDateValue
+        if (currentDate) {
+          currentDateValue = textToDate(currentDate.value)
+          date.value = dayjs(currentDateValue).format('YYYY-MM-DD')
+        }
         // dataHandlerButton.innerText = '原有活動無法新增'
         // dataHandlerButton.disabled = true
         // dataHandlerButton.classList.remove('btn-primary')

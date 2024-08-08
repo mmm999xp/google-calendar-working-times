@@ -250,12 +250,14 @@ calendarHTML.appendChild(htmlToElement(`
       </div>
     </div>
   </div>
-  <!--  -->
+  
+  <!-- 還沒有跟進日期校正更新之前，先拔掉按鈕 -->
   <!-- 工時使用量總覽 -->
+  <!--
   <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal" style="margin-top: 1%;">
     工時資料總覽
   </button>
-
+  -->
   <!-- Modal -->
   <div class="modal fade modal-xl" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
     aria-hidden="true">
@@ -331,6 +333,18 @@ window.addEventListener('popstate', function (event) {
         document.querySelector(GOOGLE_SAVE_BUTTON_SELECTOR).addEventListener('click', () => {
           const container = document.querySelector('#custom-container')
           container.classList.add('d-none')
+        })
+        window.addEventListener('keyup', (event) => {
+          const container = document.querySelector('#custom-container')
+          if (event.key === 'Enter') {
+            const activeElement = document.activeElement
+            if (!container.contains(activeElement)) {
+              container.classList.add('d-none')
+            }
+          }
+          if (event.key === 'Escape') {
+            container.classList.add('d-none')
+          }
         })
       }, 300)
     } else {
