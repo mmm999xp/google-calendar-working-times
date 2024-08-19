@@ -551,6 +551,8 @@ function showDateDataByEventId (eventId) {
         // dataHandlerButton.disabled = true
         // dataHandlerButton.classList.remove('btn-primary')
         // dataHandlerButton.classList.add('btn-secondary')
+        showPeopleValue()
+        showHoursValue()
         // 隱藏遮罩，讓使用者可輸入
         loader.style.display = 'none'
       }
@@ -581,7 +583,11 @@ function getCalendarId (calendarUrl) {
   const segments = calendarUrl.split('/')
 
   // 獲取陣列中的最後一個元素，即最後一個斜槓後的所有字元
-  const lastSegment = segments[segments.length - 1]
+  let lastSegment = segments[segments.length - 1]
+  // 去掉 ? 後面的部分
+  if (lastSegment.includes('?')) {
+    lastSegment = lastSegment.split('?')[0]
+  }
   return lastSegment
 }
 

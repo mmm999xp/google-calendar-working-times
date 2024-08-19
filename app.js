@@ -218,7 +218,7 @@ calendarHTML.appendChild(htmlToElement(`
     aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
       <div class="modal-content" style="right: 160px">
-        <div class="modal-header">
+        <div class="modal-header sticky-top bg-white">
           <h1 class="modal-title fs-5" id="staticBackdropLabel">批量複製設定</h1>
           <span id="modal_cost_message_current" class="fs-5" style="margin-left:650px;">已分配 10 小時 </span>
           <span  class="fs-5" style="margin-left:10px;"> / </span>
